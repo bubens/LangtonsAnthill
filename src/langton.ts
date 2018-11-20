@@ -192,7 +192,7 @@ function main( config: Config ): void {
   }
 
   if ( context === null ) {
-    throw new Error( "Can't get rendering context for " + context );
+    throw new Error( "Can't get rendering context for element " + canvas );
   }
 
   canvas.addEventListener(
