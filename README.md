@@ -11,7 +11,7 @@ To install your own copy and maybe play with the anthill's and ants' configurati
 2. Compile the typescript. The make.sh-Shellscript can do that for you:
 ```bash
 # Make it executable
-chown +x ./make.sh
+chmod +x ./make.sh
 # Run command
 ./make.sh
 ```
