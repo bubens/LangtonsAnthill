@@ -196,15 +196,19 @@ function main( config: Config ): void {
   }
 
   canvas.addEventListener(
-    "click"
-    , event => anttrap.push(
-      createAnt(
-          {x:Math.floor(event.x/cellwidth), y:Math.floor(event.y/cellwidth)}
-          , generateRule(states)
-          , randomInt(0,3+1)
-      )
-  )
-);
+    "mousedown"
+    , function (event: MouseEvent): Boolean {
+      anttrap.push(
+        createAnt(
+            {x:Math.floor(event.x/cellwidth), y:Math.floor(event.y/cellwidth)}
+            , generateRule(states)
+            , randomInt(0,3+1)
+        )
+      );
+      event.preventDefault();
+      return false;
+   }
+  );
 
   requestAnimationFrame( () => loop( anthill, ants, cellwidth, context, gradient ) );
 }
