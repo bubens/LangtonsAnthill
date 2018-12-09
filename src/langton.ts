@@ -38,10 +38,20 @@ function calcGradient( states: number ): Gradient {
 }
 
 function randomInt( min: number, max: number ): number {
-  return min + Math.floor( Math.random() * (max-min) );
+  return min + Math.floor( Math.random() * (max-min+1) );
 }
 
 // BEGIN Ant
+type Up = 0;
+type Right = 1;
+type Down = 2;
+type Left = 3;
+
+type Direction = Left | Right;
+type Orientation = Left | Right | Up | Down;
+
+type Rule = Direction[];
+
 interface Coords {
   x: number
   ; y: number
@@ -49,38 +59,48 @@ interface Coords {
 
 interface Ant {
   coords: Coords
-  ; orientation: number
-  ; rule: number[]
+  ; orientation: Orientation
+  ; rule: Rule
 }
 
-function createAnt( coords: Coords, rule: number[], orientation:number ): Ant {
-  return {
-    coords: coords
-    , rule: rule // 0 = right, 1 = left
-    , orientation: orientation // 0 = up, 1 = right, 2 = down, 3 = left
-  };
+function randomDirection(): Direction {
+  return randomInt(0,1) === 0 ? 1 : 3;
 }
 
-function createAnts( numberOfAnts: number, states: number, width: number, height: number ) {
+function randomOrientation(): Orientation {
+  const o = randomInt(0,3);
+  switch (o) {
+    case 0: return 0;
+    case 1: return 1;
+    case 2: return 2;
+    case 3: return 3;
+  }
+  return 0;
+}
+
+function generateRule( l:number ): Rule {
   return Array.from(
-    Array(numberOfAnts)
-    , () => createAnt(
-        createCoords( randomInt(0, width), randomInt(0,height) )
-        , generateRule( states )
-        , 0
-      )
+    Array( l )
+    , () => randomDirection()
   );
 }
 
-function drawAnt( coords: Coords, color: string, cellwidth: number, context: CanvasRenderingContext2D ): void {
-  context.fillStyle = color;
-  context.fillRect( coords.x * cellwidth, coords.y * cellwidth, cellwidth, cellwidth );
+function createAnt( coords: Coords, rule: Rule, orientation:Orientation ): Ant {
+  return {
+    coords: coords
+    , rule: rule
+    , orientation: orientation
+  };
 }
 
-function generateRule( l:number ): number[] {
+function createAnts( numberOfAnts: number, states: number, width: number, height: number ): Ant[] {
   return Array.from(
-    Array( l )
-    , () => Math.floor( Math.random() + .5 )
+    Array(numberOfAnts)
+    , () => createAnt(
+        createCoords( randomInt(0, width-1), randomInt(0, height-1) )
+        , generateRule( states )
+        , 0
+      )
   );
 }
 
@@ -91,17 +111,32 @@ function createCoords( x: number, y: number ): Coords {
   };
 }
 
-function calcNewOrientation( curOrientation: number, direction: number ): number {
-  if ( direction === 0 ) {
-    return (curOrientation + 1) % 4
-  }
-  if ( direction === 1 ) {
-    return (curOrientation-1 < 0) ? 3 : curOrientation-1;
-  }
-  throw new Error( "Unknown direction: " + direction );
+function drawAnt( coords: Coords, color: string, cellwidth: number, context: CanvasRenderingContext2D ): void {
+  context.fillStyle = color;
+  context.fillRect( coords.x * cellwidth, coords.y * cellwidth, cellwidth, cellwidth );
 }
 
-function calcNewCoords( curCoords: Coords, orientation: number, width: number, height:number ): Coords {
+function calcNewOrientation( curOrientation: Orientation, direction: Direction ): Orientation {
+  if ( direction === 1 ) {
+    switch ( curOrientation ) {
+      case 0 : return 1;
+      case 1 : return 2;
+      case 2 : return 3;
+      case 3 : return 0;
+    }
+  }
+  else {
+    switch ( curOrientation ) {
+      case 0 : return 3;
+      case 1 : return 0;
+      case 2 : return 1;
+      case 3 : return 2;
+    }
+  }
+  return 0;
+}
+
+function calcNewCoords( curCoords: Coords, orientation: Orientation, width: number, height:number ): Coords {
   if ( orientation === 0 ) {
     return createCoords( curCoords.x, (curCoords.y + 1) % height );
   }
@@ -151,11 +186,11 @@ function loop( anthill: Anthill, ants: Ant[], cellwidth: number, context: Canvas
     ants = [...ants, ...anttrap ];
     anttrap.length = 0;
   }
-  ants = ants.map( ( ant: Ant, index: number ) => {
+  ants = ants.map( function ( ant: Ant, index: number ) {
     const state: number = getState( ant.coords.x, ant.coords.y, anthill );
-    const direction: number = ant.rule[ state ];
+    const direction: Direction = ant.rule[ state ];
 
-    const newOrientation: number = calcNewOrientation( ant.orientation, direction );
+    const newOrientation: Orientation = calcNewOrientation( ant.orientation, direction );
     const newCoords: Coords = calcNewCoords( ant.coords, newOrientation, anthill.width, anthill.height);
 
     anthill = setState( ant.coords.x, ant.coords.y, anthill, ( state + 1 ) % anthill.maxStates );
@@ -170,15 +205,15 @@ function loop( anthill: Anthill, ants: Ant[], cellwidth: number, context: Canvas
 }
 
 function main( config: Config ): void {
-  const { cellwidth, states, numberOfAnts, parentID } = config,
-  width: number = Math.floor( config.width / cellwidth ),
-  height: number = Math.floor( config.height / cellwidth ),
-  anthill: Anthill = createAnthill( width, height, states ),
-  ants: Ant[] = createAnts( numberOfAnts, states, width, height ),
-  gradient: Gradient = calcGradient( states ),
-  parent: HTMLElement | null = document.getElementById( parentID ),
-  canvas: HTMLCanvasElement = document.createElement("canvas"),
-  context: CanvasRenderingContext2D | null = canvas.getContext( "2d" );
+  const { cellwidth, states, numberOfAnts, parentID } = config;
+  const width: number = Math.floor( config.width / cellwidth );
+  const height: number = Math.floor( config.height / cellwidth );
+  const anthill: Anthill = createAnthill( width, height, states );
+  const ants: Ant[] = createAnts( numberOfAnts, states, width, height );
+  const gradient: Gradient = calcGradient( states );
+  const parent: HTMLElement | null = document.getElementById( parentID );
+  const canvas: HTMLCanvasElement = document.createElement("canvas");
+  const context: CanvasRenderingContext2D | null = canvas.getContext( "2d" );
 
   canvas.width = width * cellwidth;
   canvas.height = height * cellwidth;
@@ -198,16 +233,16 @@ function main( config: Config ): void {
   canvas.addEventListener(
     "mousedown"
     , function (event: MouseEvent): Boolean {
-      anttrap.push(
-        createAnt(
+        anttrap.push(
+          createAnt(
             {x:Math.floor(event.x/cellwidth), y:Math.floor(event.y/cellwidth)}
             , generateRule(states)
-            , randomInt(0,3+1)
-        )
-      );
-      event.preventDefault();
-      return false;
-   }
+            , randomOrientation()
+          )
+        );
+        event.preventDefault();
+        return false;
+    }
   );
 
   requestAnimationFrame( () => loop( anthill, ants, cellwidth, context, gradient ) );
