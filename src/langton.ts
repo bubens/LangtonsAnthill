@@ -24,17 +24,12 @@ const anttrap: Anttrap = [];
 
 type Gradient = string[];
 function calcGradient( states: number ): Gradient {
-  return [
-    ...Array.from(
-      Array( states-1 )
-      , (_v, i) => Math.floor( 255 / (states-1) ) * i
-    )
-    , 255
-  ]
-  .map(
-    (v) => "rgb(%C,%C,%C)".replace(/\%C/g, v+"")
-  )
-  .reverse();
+  return Array(states)
+    .fill(0)
+    .map( (_,i) => i+1 )
+    .map( v => Math.round( v * 255/states ) )
+    .map( v => ["rgb(", ",", ",", ")"].join( v+"" ) )
+    .reverse();
 }
 
 function randomInt( min: number, max: number ): number {
@@ -79,36 +74,26 @@ function randomOrientation(): Orientation {
 }
 
 function generateRule( l:number ): Rule {
-  return Array.from(
-    Array( l )
-    , () => randomDirection()
-  );
+  return Array(l).fill(0).map(randomDirection);
 }
 
 function createAnt( coords: Coords, rule: Rule, orientation:Orientation ): Ant {
-  return {
-    coords: coords
-    , rule: rule
-    , orientation: orientation
-  };
+  return { coords, rule, orientation };
 }
 
 function createAnts( numberOfAnts: number, states: number, width: number, height: number ): Ant[] {
-  return Array.from(
-    Array(numberOfAnts)
-    , () => createAnt(
-        createCoords( randomInt(0, width-1), randomInt(0, height-1) )
-        , generateRule( states )
-        , 0
-      )
-  );
+  return Array(numberOfAnts)
+    .fill(0)
+    .map( () => 
+         createAnt(
+            createCoords( randomInt(0, width-1), randomInt(0, height-1) )
+            , generateRule( states )
+            , 0)
+    );
 }
 
 function createCoords( x: number, y: number ): Coords {
-  return {
-    x: x
-    , y: y
-  };
+  return { x, y };
 }
 
 function drawAnt( coords: Coords, color: string, cellwidth: number, context: CanvasRenderingContext2D ): void {
@@ -137,19 +122,16 @@ function calcNewOrientation( curOrientation: Orientation, direction: Direction )
 }
 
 function calcNewCoords( curCoords: Coords, orientation: Orientation, width: number, height:number ): Coords {
-  if ( orientation === 0 ) {
-    return createCoords( curCoords.x, (curCoords.y + 1) % height );
+  switch (orientation) {
+    case 0 :
+      return createCoords( curCoords.x, (curCoords.y + 1) % height );
+    case 1 :
+      return createCoords( (curCoords.x + 1) % width, curCoords.y );
+    case 2 :
+      return createCoords( curCoords.x, (curCoords.y-1 < 0) ? height-1 : curCoords.y-1 );
+    case 3 :
+      return createCoords( (curCoords.x-1 < 0) ? width-1 : curCoords.x-1, curCoords.y );
   }
-  else if ( orientation === 1 ) {
-    return createCoords( (curCoords.x + 1) % width, curCoords.y );
-  }
-  else if ( orientation === 2 ) {
-    return createCoords( curCoords.x, (curCoords.y-1 < 0) ? height-1 : curCoords.y-1 );
-  }
-  else if ( orientation === 3 ) {
-    return createCoords( (curCoords.x-1 < 0) ? width-1 : curCoords.x-1, curCoords.y );
-  }
-  throw new Error( "Unknown orientation: " + orientation );
 }
 
 // BEGINN Anthill
