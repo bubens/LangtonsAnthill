@@ -1,5 +1,5 @@
-(function ( window, undefined ) {
-// Config
+const startAnthill = 
+(function ( window: Window, undefined ) {
 interface Config {
   states: number
   ; width: number
@@ -8,15 +8,6 @@ interface Config {
   ; numberOfAnts: number
   ; parentID: string
 }
-
-const config: Config = {
-  states: 255
-  , width: innerWidth
-  , height: innerHeight
-  , cellwidth: 2
-  , numberOfAnts: 1
-  , parentID: "anthill"
-};
 
 // Misc/util
 type Anttrap = Ant[];
@@ -160,9 +151,62 @@ function setState( x: number, y: number, anthill: Anthill, state: number): Anthi
   return anthill;
 }
 
+// BEGIN Antthrower
+interface Antthrower {
+  position: Coords
+  , radius : number
+}
+
+function createAntthrower( position: Coords, radius: number ): Antthrower {
+  return { position, radius };
+}
+
+const antthrowerCurrentPosition: Coords = {
+  x : 0
+  , y : 0
+ };
+
+function getCurrentPosition(): Coords {
+  return antthrowerCurrentPosition;
+}
+
+
+
+
+function getDrawingContext( element: HTMLCanvasElement ): CanvasRenderingContext2D {
+  const context: CanvasRenderingContext2D | null = element.getContext( "2d" );
+
+  if ( context === null ) {
+    throw new Error( "Can't get rendering context for element " + element );
+  }
+  return context;
+}
+
+function getElementByQuery( query: string ): HTMLElement {
+  const element: HTMLElement | null = document.querySelector( query )
+
+  if ( element === null ) {
+    throw new Error( "Can't get element to query " + query );
+  }
+  return element;
+}
+
+interface FPS {
+  frames : number
+  , updated : number
+  , element : HTMLElement
+}
+
+
 
 // Main controll
-function loop( anthill: Anthill, ants: Ant[], cellwidth: number, context: CanvasRenderingContext2D, gradient: Gradient ): void {
+function loop
+  ( anthill: Anthill
+  , ants: Ant[]
+  , cellwidth: number
+  , context: CanvasRenderingContext2D
+  , gradient: Gradient
+  , fps: FPS ): void {
   // a hack. TODO: find something better.
   if ( anttrap.length > 0 ) {
     ants = [...ants, ...anttrap ];
@@ -183,41 +227,71 @@ function loop( anthill: Anthill, ants: Ant[], cellwidth: number, context: Canvas
     return createAnt( newCoords, ant.rule, newOrientation );
   });
 
-  window.requestAnimationFrame( () => loop( anthill, ants, cellwidth, context, gradient ) );
+  if ( Date.now() - fps.updated >= 1000 ) {
+    fps.element.innerHTML = fps.frames + "";
+    fps.updated = Date.now();
+    fps.frames = 0;
+  }
+  else {
+    fps.frames += 1;
+  }
+
+  window.requestAnimationFrame( () => loop( anthill, ants, cellwidth, context, gradient, fps ) );
 }
+
+
+
 
 function main( config: Config ): void {
   const { cellwidth, states, numberOfAnts, parentID } = config;
-  const width: number = Math.floor( config.width / cellwidth );
-  const height: number = Math.floor( config.height / cellwidth );
+
+  const width = Math.floor( config.width / cellwidth );
+  const height = Math.floor( config.height / cellwidth );
+
   const anthill: Anthill = createAnthill( width, height, states );
   const ants: Ant[] = createAnts( numberOfAnts, states, width, height );
+
   const gradient: Gradient = calcGradient( states );
-  const parent: HTMLElement | null = document.getElementById( parentID );
-  const canvas: HTMLCanvasElement = document.createElement("canvas");
-  const context: CanvasRenderingContext2D | null = canvas.getContext( "2d" );
 
-  canvas.width = width * cellwidth;
-  canvas.height = height * cellwidth;
-  canvas.id = parentID + "_canvas";
+  const parent: HTMLElement = getElementByQuery( "#" + parentID );
 
-  if ( parent !== null ) {
-    parent.appendChild(canvas);
-  }
-  else {
-    throw new Error( "No parent-element with ID '" + parentID + "'" );
-  }
+  
+  const guiLayer: HTMLCanvasElement = document.createElement("canvas");
+  const guiContext: CanvasRenderingContext2D = getDrawingContext( guiLayer );
 
-  if ( context === null ) {
-    throw new Error( "Can't get rendering context for element " + canvas );
-  }
+  const anthillLayer: HTMLCanvasElement = document.createElement("canvas");
+  const anthillContext: CanvasRenderingContext2D = getDrawingContext( anthillLayer );
 
-  canvas.addEventListener(
+  const antthrower = createAntthrower( createCoords(0, 0), 20 );
+
+  const fps: FPS = 
+    { frames: 0
+    , updated: Date.now()
+    , element : getElementByQuery( "#fps span" ) };
+
+
+  anthillLayer.width = width * cellwidth;
+  anthillLayer.height = height * cellwidth;
+  anthillLayer.id = parentID + "_anthillLayer";
+
+  guiLayer.width = width * cellwidth;
+  guiLayer.height = height * cellwidth;
+  guiLayer.id = parentID + "_guiLayer";
+
+
+
+  parent.appendChild(anthillLayer);
+  parent.appendChild(guiLayer);
+
+  guiLayer.addEventListener(
     "mousedown"
     , function (event: MouseEvent): Boolean {
         anttrap.push(
           createAnt(
-            {x:Math.floor(event.x/cellwidth), y:Math.floor(event.y/cellwidth)}
+            {
+              x : Math.floor(event.offsetX/cellwidth),
+              y: Math.floor(event.offsetY/cellwidth)
+            }
             , generateRule(states)
             , randomOrientation()
           )
@@ -227,8 +301,19 @@ function main( config: Config ): void {
     }
   );
 
-  requestAnimationFrame( () => loop( anthill, ants, cellwidth, context, gradient ) );
+  guiLayer.addEventListener(
+    "mousemove"
+    , function (event: MouseEvent): Boolean {
+      guiContext.clearRect( 0, 0, width*cellwidth, height*cellwidth );
+      guiContext.beginPath();
+      guiContext.arc( event.offsetX, event.offsetY, 20, 0, Math.PI*2 );
+      guiContext.stroke();
+      return false;
+    }
+  );
+
+  requestAnimationFrame( () => loop( anthill, ants, cellwidth, anthillContext, gradient, fps ) );
 }
 
-main( config );
+return main;
 }( window ));
