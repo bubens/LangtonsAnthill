@@ -9,7 +9,19 @@
   <h1>Langton's Anthill</h1>
   <div id="anthill"></div>
   <div id="controls">
-    <h2>Here be content</h2>
+    <h2>Settings</h2>
+    <ol>
+    <li>
+      <label for="amount">Drop ants per click</label>
+      <input type="range" min="1" max="100" value="50" class="slider" id="amount">
+      <div id="show_amount">50</div>
+    </li>
+    <li>
+      <label for="radius">Radius of drop-area</label>
+      <input type="range" min="5" max="100" value="20" class="slider" id="radius">
+      <div id="show_radius">20</div>
+    </li>
+  </ol>
   </div>
   <div id="fps"><span>00</span>fps</div>
   <footer>
