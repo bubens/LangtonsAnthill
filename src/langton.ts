@@ -193,17 +193,6 @@ function getCurrentPosition(): CartesianCoords {
 }
 
 
-
-
-function getDrawingContext( element: HTMLCanvasElement ): CanvasRenderingContext2D {
-  const context: CanvasRenderingContext2D | null = element.getContext( "2d" );
-
-  if ( context === null ) {
-    throw new Error( "Can't get rendering context for element " + element );
-  }
-  return context;
-}
-
 function getElementByQuery( query: string ): Element {
   const element: Element | null = document.querySelector( query )
 
@@ -215,11 +204,17 @@ function getElementByQuery( query: string ): Element {
   }
 }
 
+
+
+
+// FPS
 interface FPS {
   frames : number
   , updated : number
   , element : HTMLElement
 }
+
+
 
 
 
@@ -279,12 +274,9 @@ function main( config: Config ): void {
 
   const parent = <HTMLElement>getElementByQuery( "#" + parentID );
 
+  const layerAntdropper = layer.create( "#layer2-antdropper" );
+  const layerAnthill = layer.create( "#layer1-anthill" );
   
-  const guiLayer: HTMLCanvasElement = document.createElement("canvas");
-  const guiContext: CanvasRenderingContext2D = getDrawingContext( guiLayer );
-
-  const anthillLayer: HTMLCanvasElement = document.createElement("canvas");
-  const anthillContext: CanvasRenderingContext2D = getDrawingContext( anthillLayer );
 
   const antthrower = createAntthrower( createCoords(0, 0), 20, 1 );
 
@@ -293,21 +285,13 @@ function main( config: Config ): void {
     , updated: Date.now()
     , element : <HTMLElement>getElementByQuery( "#fps span" ) };
 
+  layerAnthill.element.width = config.width;
+  layerAnthill.element.height =config.height;
 
-  anthillLayer.width = width * cellwidth;
-  anthillLayer.height = height * cellwidth;
-  anthillLayer.id = parentID + "_anthillLayer";
-
-  guiLayer.width = width * cellwidth;
-  guiLayer.height = height * cellwidth;
-  guiLayer.id = parentID + "_guiLayer";
-
-
-
-  parent.appendChild(anthillLayer);
-  parent.appendChild(guiLayer);
-
-  guiLayer.addEventListener(
+  layerAntdropper.element.width = width * cellwidth;
+  layerAntdropper.element.height = height * cellwidth;
+ 
+  layerAntdropper.element.addEventListener(
     "mousedown"
     , function (event: MouseEvent): Boolean {
         event.preventDefault();
@@ -371,18 +355,18 @@ function main( config: Config ): void {
       }
    );
 
-  guiLayer.addEventListener(
+  layerAntdropper.element.addEventListener(
     "mousemove"
     , function (event: MouseEvent): Boolean {
-      guiContext.clearRect( 0, 0, width*cellwidth, height*cellwidth );
-      guiContext.beginPath();
-      guiContext.arc( event.offsetX, event.offsetY, antthrower.radius, 0, Math.PI*2 );
-      guiContext.stroke();
+      layerAntdropper.context.clearRect( 0, 0, width*cellwidth, height*cellwidth );
+      layerAntdropper.context.beginPath();
+      layerAntdropper.context.arc( event.offsetX, event.offsetY, antthrower.radius, 0, Math.PI*2 );
+      layerAntdropper.context.stroke();
       return false;
     }
   );
 
-  requestAnimationFrame( () => loop( anthill, ants, cellwidth, anthillContext, gradient, fps ) );
+  requestAnimationFrame( () => loop( anthill, ants, cellwidth, layerAnthill.context, gradient, fps ) );
 }
 
 return main;

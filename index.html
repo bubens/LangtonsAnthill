@@ -7,7 +7,10 @@
 </head>
 <body>
   <h1>Langton's Anthill</h1>
-  <div id="anthill"></div>
+  <div id="anthill">
+    <canvas id="layer1-anthill" width="1000" height="800"></canvas>
+    <canvas id="layer2-antdropper" width="1000" height="800"></canvas>
+  </div>
   <div id="controls">
     <h2>Settings</h2>
     <ol>
@@ -23,12 +26,13 @@
     </li>
   </ol>
   </div>
-  <div id="fps"><span>00</span>fps</div>
+  <div id="fps"><span>60</span>fps</div>
   <footer>
     <a href="about.html">About</a> |
     <a href="https://github.com/bubens/LangtonsAnthill">Source</a>
   </footer>
-  <script type="text/javascript" src="rel/langton.js"></script>
+  <script src="rel/layer.js"></script>
+  <script src="rel/langton.js"></script>
   <script>
     (function (window, document, $, undefined) {
       const width = window.innerWidth;
@@ -38,7 +42,7 @@
         states: 255
         , width: width - 436
         , height: height - 100
-        , cellwidth: 2
+        , cellwidth: 10
         , numberOfAnts: 0
         , parentID: "anthill"
       };
