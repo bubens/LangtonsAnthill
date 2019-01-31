@@ -2,11 +2,8 @@ const startAnthill =
 (function ( window: Window, undefined ) {
 interface Config {
   states: number
-  ; width: number
-  ; height: number
   ; cellwidth: number
   ; numberOfAnts: number
-  ; parentID: string
 }
 
 // Misc/util
@@ -257,7 +254,7 @@ function loop
 
 
 function main( config: Config ): void {
-  const { cellwidth, states, numberOfAnts, parentID } = config;
+  const { cellwidth, states, numberOfAnts } = config;
 
   const width = Math.floor( config.width / cellwidth );
   const height = Math.floor( config.height / cellwidth );

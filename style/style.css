@@ -15,8 +15,9 @@ html {
 }
 
 h1 {
-  position: fixed;
-  top: 1px;
+  position: absolute;
+  top: 0px;
+  left: 0px;
   width: 100%;
   height: 30px;
   padding: 5px;
@@ -27,11 +28,10 @@ h1 {
   font-variant: small-caps;
 }
 
-#anthill canvas {
+#layers canvas {
   position: absolute;
   top: 50px;
   left: 10px;
-  width: 1000px;
   cursor: none;
   border: 3px solid #000;
   border-radius: 6px;
@@ -40,9 +40,7 @@ h1 {
 #controls {
   position: absolute;
   top: 50px;
-  left: 1026px;
   width: 400px;
-  height: 90%;
   border: 3px solid #000;
   border-radius: 5px;
   background-color: #00CACA;
@@ -58,8 +56,7 @@ h1 {
 
 #fps {
   position: absolute;
-  left: 10px;
-  bottom: 25px;
+  margin-left: 10px;
   font-size: 15px;
 }
 
