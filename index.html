@@ -26,12 +26,11 @@
     </li>
   </ol>
   </div>
-  <div id="fps"><span>60</span>fps</div>
+  <div id="fps">60FPS</div>
   <footer>
     <a href="about.html">About</a> |
     <a href="https://github.com/bubens/LangtonsAnthill">Source</a>
   </footer>
-  <script src="rel/layer.js"></script>
   <script src="rel/langton.js"></script>
   <script>
     (function (window, document, $, undefined) {
@@ -40,8 +39,8 @@
 
       const config = {
         states: 255
-        , width: width - 436
-        , height: height - 100
+        , width: width
+        , height: height
         , cellwidth: 10
         , numberOfAnts: 0
         , parentID: "anthill"

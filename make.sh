@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SCRIPTS="./src/layer.ts ./src/langton.ts"
+SCRIPTS="./src/util.ts ./src/fps.ts ./src/layer.ts ./src/langton.ts"
 
 DEST="./rel"
 FILE="langton.js"

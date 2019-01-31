@@ -207,12 +207,7 @@ function getElementByQuery( query: string ): Element {
 
 
 
-// FPS
-interface FPS {
-  frames : number
-  , updated : number
-  , element : HTMLElement
-}
+
 
 
 
@@ -246,16 +241,16 @@ function loop
     return createAnt( newCoords, ant.rule, newOrientation );
   });
 
-  if ( Date.now() - fps.updated >= 1000 ) {
-    fps.element.innerHTML = fps.frames + "";
-    fps.updated = Date.now();
-    fps.frames = 0;
-  }
-  else {
-    fps.frames += 1;
-  }
-
-  window.requestAnimationFrame( () => loop( anthill, ants, cellwidth, context, gradient, fps ) );
+  window.requestAnimationFrame( 
+    () => loop(
+      anthill,
+      ants,
+      cellwidth,
+      context,
+      gradient,
+      Fps.update( fps ) 
+      )
+    );
 }
 
 
@@ -274,22 +269,19 @@ function main( config: Config ): void {
 
   const parent = <HTMLElement>getElementByQuery( "#" + parentID );
 
-  const layerAntdropper = layer.create( "#layer2-antdropper" );
-  const layerAnthill = layer.create( "#layer1-anthill" );
+  const layerAntdropper = Layer.create( "#layer2-antdropper" );
+  const layerAnthill = Layer.create( "#layer1-anthill" );
   
 
   const antthrower = createAntthrower( createCoords(0, 0), 20, 1 );
 
-  const fps: FPS = 
-    { frames: 0
-    , updated: Date.now()
-    , element : <HTMLElement>getElementByQuery( "#fps span" ) };
+  const fps = Fps.create( s => getElementByQuery( "#fps" ).innerHTML = s );
 
   layerAnthill.element.width = config.width;
   layerAnthill.element.height =config.height;
 
-  layerAntdropper.element.width = width * cellwidth;
-  layerAntdropper.element.height = height * cellwidth;
+  layerAntdropper.element.width = config.width;
+  layerAntdropper.element.height = config.height;
  
   layerAntdropper.element.addEventListener(
     "mousedown"
