@@ -31,8 +31,16 @@
     <a href="about.html">About</a> |
     <a href="https://github.com/bubens/LangtonsAnthill">Source</a>
   </footer>
-  <script src="rel/util.js"></script>
   <script src="rel/langton.js"></script>
   <script src="rel/adjust.js"></script>
+  <script>
+    startAnthill({
+      states: 255
+      , cellWidth : 2
+      , numberOfAnts : 0
+      , anthillID: "#layer1-anthill"
+      , antdropperID: "#layer2-antdropper"
+    });
+  </script>
 </body>
 </html>
