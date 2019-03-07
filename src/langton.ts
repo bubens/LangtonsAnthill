@@ -78,9 +78,11 @@ function createAnts(numberOfAnts: number, states: number, width: number, height:
     );
 }
 
-function drawAnt(coords: Coords.Cartesian, color: string, cellwidth: number, context: CanvasRenderingContext2D): void {
-  context.fillStyle = color;
-  context.fillRect(coords.x * cellwidth, coords.y * cellwidth, cellwidth, cellwidth);
+function drawAnt(coords: Coords.Cartesian, color: string, cellwidth: number): (c:CanvasRenderingContext2D)=>void {
+  return function (context) {
+    context.fillStyle = color;
+    context.fillRect(coords.x * cellwidth, coords.y * cellwidth, cellwidth, cellwidth);
+  }
 }
 
 function calcNewOrientation(curOrientation: Orientation, direction: Direction): Orientation {
@@ -186,13 +188,18 @@ function getElementByQuery(query: string): Element {
 
 
 // Main controll
-function loop
-  (anthill: Anthill
-    , ants: Ant[]
-    , cellwidth: number
-    , context: CanvasRenderingContext2D
-    , gradient: Gradient.Gradient
-    , fps: Fps.Logger): void {
+
+interface State {
+  cellwidth : number
+  , layer : Layer.Layer
+  , gradient: Gradient.Gradient
+  , fps: Fps.Logger  
+}
+
+let DRAW_ANTS:boolean = true;
+
+function loop (ants: Array<Ant>, anthill: Anthill, fps: Fps.Logger, state: State): void {
+  const { cellwidth, layer, gradient } = state;
 
 
   // a hack. TODO: find something better.
@@ -210,51 +217,49 @@ function loop
 
     anthill = setState(ant.coords.x, ant.coords.y, anthill, (state + 1) % anthill.maxStates);
 
-    drawAnt(newCoords, "rgb(255,0,0)", cellwidth, context);
-    drawAnt(ant.coords, gradient[state], cellwidth, context);
+    if (DRAW_ANTS) {
+      Layer.draw( drawAnt(newCoords, "rgb(255,0,0)", cellwidth ), layer );
+    }
+    Layer.draw ( drawAnt(ant.coords, gradient[state], cellwidth ), layer );
 
     return createAnt(newCoords, ant.rule, newOrientation);
   });
 
   window.requestAnimationFrame(
-    () => loop(
-      anthill,
-      ants,
-      cellwidth,
-      context,
-      gradient,
-      Fps.update(fps)
-    )
+    () => 
+      loop( ants, anthill, Fps.update(fps), state )
   );
 }
+
+
+
+
 
 export function main(config: Config): void {
   const { cellwidth, states, numberOfAnts } = config;
 
-  const layerAntdropper = Layer.create("#layer2-antdropper");
+  
   const layerAnthill = Layer.create("#layer1-anthill");
 
   const w = Math.floor(layerAnthill.element.width / cellwidth),
     h = Math.floor(layerAnthill.element.height / cellwidth);
 
-  const anthill = createAnthill(w, h, states);
+  
   const ants = createAnts(numberOfAnts, states, w, h);
 
-  const gradient = Gradient.create(states);
+  const anthill = createAnthill(w, h, states);
+  
 
-
-
-  const antthrower = createAntdropper(20, 1);
-
-  const fps = Fps.create(s => getElementByQuery("#fps").innerHTML = s);
-
+  
+  const layerAntdropper = Layer.create("#layer2-antdropper");
+  const antdropper = createAntdropper(20, 1);
   layerAntdropper.element.addEventListener(
     "mousedown"
     , function (event: MouseEvent): Boolean {
       event.preventDefault();
       const newAnts =
-        Array(antthrower.amount)
-          .fill(antthrower.radius)
+        Array(antdropper.amount)
+          .fill(antdropper.radius)
           .map(
             r =>
               Coords.polarToCartesian(
@@ -293,7 +298,7 @@ export function main(config: Config): void {
         event.preventDefault();
         const x = guiRadius.valueAsNumber;
         guiRadiusShow.innerHTML = "" + x;
-        antthrower.radius = x;
+        antdropper.radius = x;
         return false;
       }
     );
@@ -307,23 +312,42 @@ export function main(config: Config): void {
         event.preventDefault();
         const x = guiAmount.valueAsNumber;
         guiAmountShow.innerHTML = "" + x;
-        antthrower.amount = x;
+        antdropper.amount = x;
         return false;
       }
     );
+  
+    const guiDrawAnts = <HTMLInputElement>getElementByQuery("#drawAnts");
+    guiDrawAnts
+      .addEventListener(
+        "input"
+        , function (event: Event): Boolean {
+          // uhhh... bad!!!
+          DRAW_ANTS = guiDrawAnts.checked;
+          return false;
+        }
+      );
 
   layerAntdropper.element.addEventListener(
     "mousemove"
     , function (event: MouseEvent): Boolean {
       layerAntdropper.context.clearRect(0, 0, 9999, 9999);
       layerAntdropper.context.beginPath();
-      layerAntdropper.context.arc(event.offsetX, event.offsetY, antthrower.radius, 0, Math.PI * 2);
+      layerAntdropper.context.arc(event.offsetX, event.offsetY, antdropper.radius, 0, Math.PI * 2);
       layerAntdropper.context.stroke();
       return false;
     }
   );
 
-  requestAnimationFrame(() => loop(anthill, ants, cellwidth, layerAnthill.context, gradient, fps));
+
+  const gradient = Gradient.create(states);
+
+  const fps = Fps.create(s => getElementByQuery("#fps").innerHTML = s);
+
+  requestAnimationFrame(
+    () => 
+      loop( ants, anthill, fps, { cellwidth, layer : layerAnthill, gradient, fps } )
+  );
 }
 
 main({

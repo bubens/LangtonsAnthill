@@ -22,6 +22,11 @@ function getDrawingContext(element: HTMLCanvasElement): CanvasRenderingContext2D
 	return context;
 }
 
+export function draw( fn:(c:CanvasRenderingContext2D)=>void, layer: Layer ):Layer {
+	fn( layer.context );
+	return layer;
+}
+
 export function create(query: string): Layer {
 	const element = <HTMLCanvasElement>getElementByQuery(query);
 	const context: CanvasRenderingContext2D = getDrawingContext(element);
