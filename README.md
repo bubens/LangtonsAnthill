@@ -8,12 +8,14 @@ You can play with the anthill at http://unpunk.de.
 To install your own copy and maybe play with the anthill's and ants' configuration, do the following.
 
 1. Download the repo: https://github.com/bubens/LangtonsAnthill
-2. Compile the typescript. The make.sh-Shellscript can do that for you:
+2. Make:
 ```bash
-# Make it executable
-chmod +x ./make.sh
+# Go to folder
+cd LangtonsAnthill
+# Install dependencies
+npm install
 # Run command
-./make.sh
+npm run make
 ```
 3. To use the same font I did (and in case they're not installed on your machine): [download](https://assets.ubuntu.com/v1/fad7939b-ubuntu-font-family-0.83.zip) the Ubuntu Fontfamily, unzip and copy ```Ubuntu-L.ttf``` to the ```style```-folder.
 OR: Use your own favorite font instead.

@@ -1,15 +1,21 @@
-// Gradient PMM (Poor man's module)
-type Gradient = string[];
+export type Gradient = string[];
 
-const Gradient = (function (Array, Math) {
-	
-	const create = (states: number): Gradient =>
-		Array(states)
-	    	.fill(0)
-	    	.map( (_,i) => i+1 )
-	    	.map( v => Math.round( v * 255/states ) )
-	    	.map( v => ["rgb(", ",", ",", ")"].join( v+"" ) )
-	    	.reverse();
+const toRange = 
+	( _:any, i:number ):number => 
+		i+1;
 
-	return { create };
-}(Array, Math));
+const ratioOf255 = 
+	(states: number, v: number):number =>
+		Math.round( v * 255/states );
+
+const toGrey =
+	(v:number):string => 
+		["rgb(", ",", ",", ")"].join( v+"" );
+
+
+export const create = (states: number): Gradient =>
+	Array(states)
+    	.fill(0)
+    	.map( toRange )
+    	.map( v => toGrey( ratioOf255(states, v) )  )
+    	.reverse();

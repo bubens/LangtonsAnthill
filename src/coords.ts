@@ -1,40 +1,41 @@
-// Coordinates PMM (Poor man's module)
-interface CartesianCoords {
+export interface Cartesian {
   x: number
   ; y: number
 }
 
-interface PolarCoords {
+export interface Polar {
   r: number
   ; phi: number
 }
 
-const Coords = (function (Math) {
-	const createCartesian = (x: number, y: number): CartesianCoords =>
+
+export const createCartesian = 
+	(x: number, y: number): Cartesian =>
 		({x, y});
 
-	const createPolar = (r: number, phi: number): PolarCoords =>
+export const createPolar = 
+	(r: number, phi: number): Polar =>
 		({r, phi});
 
-	const degreesToRadian = (d: number): number =>
+export const degreesToRadian = 
+	(d: number): number =>
 		d / 360 * (2 * Math.PI);
 
-	const radianToDegrees = (r : number): number =>
+export const radianToDegrees = 
+	(r : number): number =>
 		r / (2 * Math.PI) * 360;
 
-	const polarToCartesian = ({r, phi}: PolarCoords): CartesianCoords => (
+export const polarToCartesian = 
+	({r, phi}: Polar): Cartesian => (
 		{ x: r * Math.cos( degreesToRadian(phi) )
 		, y: r * Math.sin( degreesToRadian(phi) )
-		});
+		}
+	);
 
-	const cartesianToPolar = ({x, y}: CartesianCoords): PolarCoords => (
+export const cartesianToPolar = 
+	({x, y}: Cartesian): Polar => (
 		{ r: Math.sqrt( x**2 + y**2 )
 		, phi: radianToDegrees( Math.atan( y/x ) )
-		});
-
-	return { 
-		createCartesian, createPolar
-		, degreesToRadian, radianToDegrees
-		, polarToCartesian, cartesianToPolar };
-}(Math));
+		}
+	);
 

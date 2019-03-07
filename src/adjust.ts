@@ -1,4 +1,4 @@
-(function (window, document, undefined) {
+(function (window, document) {
 	function $( query: string ): HTMLElement {
 		const element: HTMLElement | null = document.querySelector( query )
 		if ( element === null ) {

@@ -4,6 +4,7 @@
   <title>Langton's Anthill</title>
   <meta charset="utf-8">
   <link href="/style/style.css" type="text/css" rel="stylesheet" />
+  <script data-main="../rel/langton.js" src="lib/require.js"></script>
 </head>
 <body>
   <h1>Langton's Anthill</h1>
@@ -31,16 +32,9 @@
     <a href="about.html">About</a> |
     <a href="https://github.com/bubens/LangtonsAnthill">Source</a>
   </footer>
-  <script src="rel/langton.js"></script>
+  <!--<script src="rel/langton.js"></script>-->
   <script src="rel/adjust.js"></script>
   <script>
-    startAnthill({
-      states: 255
-      , cellWidth : 2
-      , numberOfAnts : 0
-      , anthillID: "#layer1-anthill"
-      , antdropperID: "#layer2-antdropper"
-    });
   </script>
 </body>
 </html>

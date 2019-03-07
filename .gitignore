@@ -1,3 +1,5 @@
 rel/*
-style/*ttf
+style/*
+!style/style.css
 src/xxx*
+node_modules

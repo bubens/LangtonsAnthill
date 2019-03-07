@@ -1,0 +1,33 @@
+{
+  "name": "langtonsanthill",
+  "version": "1.0.0",
+  "description": "Let Langton's Ant crawl on Langton's Anthill. ",
+  "main": "index.html",
+  "dependencies": {},
+  "devDependencies": {
+    "requirejs": "^2.3.6",
+    "tsc": "^1.20150623.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "make": "sh ./make.sh"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bubens/LangtonsAnthill.git"
+  },
+  "keywords": [
+    "Langton's",
+    "ant",
+    "Langton's",
+    "anthill",
+    "cellular",
+    "automaton"
+  ],
+  "author": "Bubens van Lyka <bubens@unpunk.de>",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/bubens/LangtonsAnthill/issues"
+  },
+  "homepage": "https://github.com/bubens/LangtonsAnthill#readme"
+}

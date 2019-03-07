@@ -1,14 +1,16 @@
+import * as Coords from "./coords";
+import * as Random from "./random";
+import * as Gradient from "./gradient";
+import * as Fps from "./fps-log";
+import * as Layer from "./layer";
+
 interface Config {
   states: number
   ; cellwidth: number
   ; numberOfAnts: number
-  ; anthillID : string
-  ; antdroperID : string
+  ; anthillID: string
+  ; antdropperID: string
 }
-
-const startAnthill = 
-(function ( window: Window, undefined ) {
-
 
 // Misc/util
 type Anttrap = Ant[];
@@ -31,17 +33,17 @@ type Rule = Array<Direction>;
 
 // BEGIN Ant
 interface Ant {
-  coords: CartesianCoords
+  coords: Coords.Cartesian
   ; orientation: Orientation
   ; rule: Rule
 }
 
-function randomDirection( generator?:()=>number ): Direction {
-  return Random.randomInt(0,1,generator) === 0 ? 1 : 3;
+function randomDirection(generator?: () => number): Direction {
+  return Random.randomInt(0, 1, generator) === 0 ? 1 : 3;
 }
 
-function randomOrientation( generator?: ()=>number ): Orientation {
-  const o = Random.randomInt(0,3, generator);
+function randomOrientation(generator?: () => number): Orientation {
+  const o = Random.randomInt(0, 3, generator);
   switch (o) {
     case 0: return 0;
     case 1: return 1;
@@ -51,78 +53,78 @@ function randomOrientation( generator?: ()=>number ): Orientation {
   return 0;
 }
 
-function randomPolarCoord( r: number ): PolarCoords {
-  return Coords.createPolar( 
-     Random.randomInt( 0, r )
-     , Random.randomInt( 0, 360 ));
+function randomPolarCoord(r: number): Coords.Polar {
+  return Coords.createPolar(
+    Random.randomInt(0, r)
+    , Random.randomInt(0, 360));
 }
 
-function generateRule( l:number ): Rule {
-  return Array(l).fill(0).map( () => randomDirection() );
+function generateRule(l: number): Rule {
+  return Array(l).fill(0).map(() => randomDirection());
 }
 
-function createAnt( coords: CartesianCoords, rule: Rule, orientation:Orientation ): Ant {
+function createAnt(coords: Coords.Cartesian, rule: Rule, orientation: Orientation): Ant {
   return { coords, rule, orientation };
 }
 
-function createAnts( numberOfAnts: number, states: number, width: number, height: number ): Ant[] {
+function createAnts(numberOfAnts: number, states: number, width: number, height: number): Ant[] {
   return Array(numberOfAnts)
     .fill(0)
-    .map( () => 
-         createAnt(
-            Coords.createCartesian( Random.randomInt(0, width-1), Random.randomInt(0, height-1) )
-            , generateRule( states )
-            , 0)
+    .map(() =>
+      createAnt(
+        Coords.createCartesian(Random.randomInt(0, width - 1), Random.randomInt(0, height - 1))
+        , generateRule(states)
+        , 0)
     );
 }
 
-function drawAnt( coords: CartesianCoords, color: string, cellwidth: number, context: CanvasRenderingContext2D ): void {
+function drawAnt(coords: Coords.Cartesian, color: string, cellwidth: number, context: CanvasRenderingContext2D): void {
   context.fillStyle = color;
-  context.fillRect( coords.x * cellwidth, coords.y * cellwidth, cellwidth, cellwidth );
+  context.fillRect(coords.x * cellwidth, coords.y * cellwidth, cellwidth, cellwidth);
 }
 
-function calcNewOrientation( curOrientation: Orientation, direction: Direction ): Orientation {
-  if ( direction === 1 ) {
-    switch ( curOrientation ) {
-      case 0 : return 1;
-      case 1 : return 2;
-      case 2 : return 3;
-      case 3 : return 0;
+function calcNewOrientation(curOrientation: Orientation, direction: Direction): Orientation {
+  if (direction === 1) {
+    switch (curOrientation) {
+      case 0: return 1;
+      case 1: return 2;
+      case 2: return 3;
+      case 3: return 0;
     }
   }
   else {
-    switch ( curOrientation ) {
-      case 0 : return 3;
-      case 1 : return 0;
-      case 2 : return 1;
-      case 3 : return 2;
+    switch (curOrientation) {
+      case 0: return 3;
+      case 1: return 0;
+      case 2: return 1;
+      case 3: return 2;
     }
   }
   return 0;
 }
 
-function calcNewCoords( curCoords: CartesianCoords, orientation: Orientation, width: number, height:number ): CartesianCoords {
+function calcNewCoords(curCoords: Coords.Cartesian, orientation: Orientation, width: number, height: number): Coords.Cartesian {
   switch (orientation) {
-    case 0 :
+    case 0:
       return Coords.createCartesian(
-          curCoords.x
-          , (curCoords.y + 1) % height
-        );
-    case 1 :
+        curCoords.x
+        , (curCoords.y + 1) % height
+      );
+    case 1:
       return Coords.createCartesian(
-          (curCoords.x + 1) % width
-          , curCoords.y
-         );
-    case 2 :
+        (curCoords.x + 1) % width
+        , curCoords.y
+      );
+    case 2:
       return Coords.createCartesian(
-          curCoords.x
-          , (curCoords.y-1 < 0) ? height-1 : curCoords.y-1
-        );
-    case 3 :
+        curCoords.x
+        , (curCoords.y - 1 < 0) ? height - 1 : curCoords.y - 1
+      );
+    case 3:
       return Coords.createCartesian(
-          (curCoords.x-1 < 0) ? width-1 : curCoords.x-1
-          , curCoords.y
-        );
+        (curCoords.x - 1 < 0) ? width - 1 : curCoords.x - 1
+        , curCoords.y
+      );
   }
 }
 
@@ -137,21 +139,21 @@ interface Anthill {
   ; maxStates: number
 }
 
-function createAnthill( width: number, height: number, maxStates: number ): Anthill {
+function createAnthill(width: number, height: number, maxStates: number): Anthill {
   return {
     width: width
     , height: height
-    , area: new Uint8Array( width * height ).fill(0)
+    , area: new Uint8Array(width * height).fill(0)
     , maxStates: maxStates
   };
 }
 
-function getState( x: number, y: number, anthill: Anthill ): number {
-  return anthill.area[ anthill.width * y + x ];
+function getState(x: number, y: number, anthill: Anthill): number {
+  return anthill.area[anthill.width * y + x];
 }
 
-function setState( x: number, y: number, anthill: Anthill, state: number): Anthill {
-  anthill.area[ anthill.width * y + x ] = state;
+function setState(x: number, y: number, anthill: Anthill, state: number): Anthill {
+  anthill.area[anthill.width * y + x] = state;
   return anthill;
 }
 
@@ -160,20 +162,20 @@ function setState( x: number, y: number, anthill: Anthill, state: number): Anthi
 
 // BEGIN Antdropper
 interface Antdropper {
-  radius : number
-  , amount : number
+  radius: number
+  , amount: number
 }
 
-function createAntdropper( radius: number, amount: number ): Antdropper {
+function createAntdropper(radius: number, amount: number): Antdropper {
   return { radius, amount };
 }
 
 
 // OTHER Util
-function getElementByQuery( query: string ): Element {
-  const element: Element | null = document.querySelector( query )
-  if ( element === null ) {
-    throw new Error( "Can't get element to query " + query );
+function getElementByQuery(query: string): Element {
+  const element: Element | null = document.querySelector(query)
+  if (element === null) {
+    throw new Error("Can't get element to query " + query);
   }
   else {
     return element;
@@ -185,123 +187,119 @@ function getElementByQuery( query: string ): Element {
 
 // Main controll
 function loop
-  ( anthill: Anthill
-  , ants: Ant[]
-  , cellwidth: number
-  , context: CanvasRenderingContext2D
-  , gradient: Gradient
-  , fps: FPS ): void {
+  (anthill: Anthill
+    , ants: Ant[]
+    , cellwidth: number
+    , context: CanvasRenderingContext2D
+    , gradient: Gradient.Gradient
+    , fps: Fps.Logger): void {
 
 
   // a hack. TODO: find something better.
-  if ( anttrap.length > 0 ) {
-    ants = [...ants, ...anttrap ];
+  if (anttrap.length > 0) {
+    ants = [...ants, ...anttrap];
     anttrap.length = 0;
   }
 
-  ants = ants.map( function ( ant: Ant, index: number ) {
-    const state: number = getState( ant.coords.x, ant.coords.y, anthill );
-    const direction: Direction = ant.rule[ state ];
+  ants = ants.map(function (ant: Ant) {
+    const state: number = getState(ant.coords.x, ant.coords.y, anthill);
+    const direction: Direction = ant.rule[state];
 
-    const newOrientation: Orientation = calcNewOrientation( ant.orientation, direction );
-    const newCoords: CartesianCoords = calcNewCoords( ant.coords, newOrientation, anthill.width, anthill.height);
+    const newOrientation: Orientation = calcNewOrientation(ant.orientation, direction);
+    const newCoords: Coords.Cartesian = calcNewCoords(ant.coords, newOrientation, anthill.width, anthill.height);
 
-    anthill = setState( ant.coords.x, ant.coords.y, anthill, ( state + 1 ) % anthill.maxStates );
+    anthill = setState(ant.coords.x, ant.coords.y, anthill, (state + 1) % anthill.maxStates);
 
-    drawAnt( newCoords, "rgb(255,0,0)", cellwidth, context );
-    drawAnt( ant.coords, gradient[state], cellwidth, context );
+    drawAnt(newCoords, "rgb(255,0,0)", cellwidth, context);
+    drawAnt(ant.coords, gradient[state], cellwidth, context);
 
-    return createAnt( newCoords, ant.rule, newOrientation );
+    return createAnt(newCoords, ant.rule, newOrientation);
   });
 
-  window.requestAnimationFrame( 
+  window.requestAnimationFrame(
     () => loop(
       anthill,
       ants,
       cellwidth,
       context,
       gradient,
-      Fps.update( fps ) 
-      )
-    );
+      Fps.update(fps)
+    )
+  );
 }
 
-function main( config: Config ): void {
-  const { cellwidth, states, numberOfAnts, anthillID, antdroperID } = config;
+export function main(config: Config): void {
+  const { cellwidth, states, numberOfAnts } = config;
 
-  const layerAntdropper = Layer.create( "#layer2-antdropper" );
-  const layerAnthill = Layer.create( "#layer1-anthill" );
+  const layerAntdropper = Layer.create("#layer2-antdropper");
+  const layerAnthill = Layer.create("#layer1-anthill");
 
-  const w = Math.floor( layerAnthill.element.width / cellwidth ),
-  h = Math.floor( layerAnthill.element.height / cellwidth );
+  const w = Math.floor(layerAnthill.element.width / cellwidth),
+    h = Math.floor(layerAnthill.element.height / cellwidth);
 
-  const anthill: Anthill = createAnthill( w, h, states );
-  const ants: Ant[] = createAnts( numberOfAnts, states, w, h );
+  const anthill = createAnthill(w, h, states);
+  const ants = createAnts(numberOfAnts, states, w, h);
 
-  const gradient: Gradient = Gradient.create( states );
+  const gradient = Gradient.create(states);
 
-  
-  
 
-  const antthrower = createAntdropper( 20, 1 );
 
-  const fps = Fps.create( s => getElementByQuery( "#fps" ).innerHTML = s );
+  const antthrower = createAntdropper(20, 1);
 
- 
+  const fps = Fps.create(s => getElementByQuery("#fps").innerHTML = s);
+
   layerAntdropper.element.addEventListener(
     "mousedown"
     , function (event: MouseEvent): Boolean {
-        event.preventDefault();
-        const newAnts =
-          Array( antthrower.amount )
-            .fill( antthrower.radius )
-            .map( 
-              r =>
-                Coords.polarToCartesian(
-                  randomPolarCoord(r)
-                )
+      event.preventDefault();
+      const newAnts =
+        Array(antthrower.amount)
+          .fill(antthrower.radius)
+          .map(
+            r =>
+              Coords.polarToCartesian(
+                randomPolarCoord(r)
               )
-            .map( 
-              coords => 
-                Coords.createCartesian(
-                  Math.floor( (coords.x + event.offsetX) / cellwidth )
-                  , Math.floor( (coords.y + event.offsetY) / cellwidth )
-                )
+          )
+          .map(
+            coords =>
+              Coords.createCartesian(
+                Math.floor((coords.x + event.offsetX) / cellwidth)
+                , Math.floor((coords.y + event.offsetY) / cellwidth)
               )
-            .map( 
-              coords =>
-                createAnt(
-                  coords
-                  , generateRule(states)
-                  , randomOrientation()
-                )
-              );
-        console.log( newAnts );
-        console.log(anttrap);
+          )
+          .map(
+            coords =>
+              createAnt(
+                coords
+                , generateRule(states)
+                , randomOrientation()
+              )
+          );
 
 
-        anttrap = newAnts;
-        
-        return false;
+      anttrap = newAnts;
+
+      return false;
     }
   );
 
-  const guiRadius = <HTMLInputElement>getElementByQuery( "#radius" );
-  const guiRadiusShow = <HTMLElement>getElementByQuery( "#show_radius" );
+  const guiRadius = <HTMLInputElement>getElementByQuery("#radius");
+  const guiRadiusShow = <HTMLElement>getElementByQuery("#show_radius");
   guiRadius
     .addEventListener(
       "input"
-      , function (event: Event ): Boolean {
+      , function (event: Event): Boolean {
         event.preventDefault();
         const x = guiRadius.valueAsNumber;
         guiRadiusShow.innerHTML = "" + x;
         antthrower.radius = x;
         return false;
       }
-  );
+    );
 
-  const guiAmount = <HTMLInputElement>getElementByQuery( "#amount" );
-  const guiAmountShow = <HTMLElement>getElementByQuery( "#show_amount" );
+  const guiAmount = <HTMLInputElement>getElementByQuery("#amount");
+  const guiAmountShow = <HTMLElement>getElementByQuery("#show_amount");
   guiAmount
     .addEventListener(
       "input"
@@ -312,21 +310,26 @@ function main( config: Config ): void {
         antthrower.amount = x;
         return false;
       }
-   );
+    );
 
   layerAntdropper.element.addEventListener(
     "mousemove"
     , function (event: MouseEvent): Boolean {
-      layerAntdropper.context.clearRect( 0, 0, 9999, 9999 );
+      layerAntdropper.context.clearRect(0, 0, 9999, 9999);
       layerAntdropper.context.beginPath();
-      layerAntdropper.context.arc( event.offsetX, event.offsetY, antthrower.radius, 0, Math.PI*2 );
+      layerAntdropper.context.arc(event.offsetX, event.offsetY, antthrower.radius, 0, Math.PI * 2);
       layerAntdropper.context.stroke();
       return false;
     }
   );
 
-  requestAnimationFrame( () => loop( anthill, ants, cellwidth, layerAnthill.context, gradient, fps ) );
+  requestAnimationFrame(() => loop(anthill, ants, cellwidth, layerAnthill.context, gradient, fps));
 }
 
-return main;
-}( window ));
+main({
+  states: 255
+  , cellwidth : 2
+  , numberOfAnts : 0
+  , anthillID: "#layer1-anthill"
+  , antdropperID: "#layer2-antdropper"
+});
