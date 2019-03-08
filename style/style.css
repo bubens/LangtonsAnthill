@@ -37,7 +37,7 @@ h1 {
   border-radius: 6px;
 }
 
-#controls {
+#sidebar {
   position: absolute;
   top: 50px;
   width: 400px;
@@ -47,7 +47,7 @@ h1 {
   
 }
 
-#controls h2 {
+#sidebar h2 {
   font-size: 24px;
   width: 100%;
   text-align: center;
@@ -55,9 +55,7 @@ h1 {
 }
 
 #fps {
-  position: absolute;
-  margin-left: 10px;
-  font-size: 15px;
+  
 }
 
 article {

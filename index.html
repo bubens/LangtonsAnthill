@@ -12,26 +12,28 @@
     <canvas id="layer1-anthill"></canvas>
     <canvas id="layer2-antdropper"></canvas>
   </div>
-  <div id="controls">
+  <div id="sidebar">
     <h2>Settings</h2>
     <ol>
-    <li>
-      <label for="amount">Drop ants per click</label>
-      <input type="range" min="1" max="100" value="1" class="slider" id="amount">
-      <div id="show_amount">50</div>
-    </li>
-    <li>
-      <label for="radius">Radius of drop-area</label>
-      <input type="range" min="5" max="100" value="20" class="slider" id="radius">
-      <div id="show_radius">20</div>
-    </li>
-    <li>
-      <label for="drawAnts">Draw ants?</label>
-      <input type="checkbox" checked="checked" id="drawAnts">
-    </li>
-  </ol>
+      <li>
+        <label for="amount">Drop ants per click</label>
+        <input type="range" min="1" max="100" value="1" class="slider" id="amount">
+        <div id="show_amount">50</div>
+      </li>
+      <li>
+        <label for="radius">Radius of drop-area</label>
+        <input type="range" min="5" max="100" value="20" class="slider" id="radius">
+        <div id="show_radius">20</div>
+      </li>
+      <li>
+        <label for="drawAnts">Draw ants?</label>
+        <input type="checkbox" checked="checked" id="drawAnts">
+      </li>
+    </ol>
+    <h2>Stats</h2>
+    <div id="stats"><span id="stats_fps">60</span>FPS at <span id="stats_ants">0</span> ants</div>
   </div>
-  <div id="fps">60FPS</div>
+  
   <footer>
     <a href="about.html">About</a> |
     <a href="https://github.com/bubens/LangtonsAnthill">Source</a>

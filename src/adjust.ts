@@ -24,9 +24,9 @@
 	anthill.height = canvasHeight;
 	antdropper.width = canvasWidth;
 	antdropper.height = canvasHeight;
-	$( "#controls" ).style.left = controlsPosLeft + "px";
-	$( "#controls" ).style.height = canvasHeight + "px";
-	$( "#fps" ).style.top = (height - 50) + "px";
+	$( "#sidebar" ).style.left = controlsPosLeft + "px";
+	$( "#sidebar" ).style.height = canvasHeight + "px";
+	//$( "#fps" ).style.top = (height - 50) + "px";
 
 
 }(window, document));

@@ -1,7 +1,8 @@
+import * as Util from "./util";
 import * as Coords from "./coords";
 import * as Random from "./random";
 import * as Gradient from "./gradient";
-import * as Fps from "./fps-log";
+import * as Stats from "./stats";
 import * as Layer from "./layer";
 
 interface Config {
@@ -193,13 +194,12 @@ interface State {
   cellwidth : number
   , layer : Layer.Layer
   , gradient: Gradient.Gradient
-  , fps: Fps.Logger  
 }
 
 let DRAW_ANTS:boolean = true;
 
-function loop (ants: Array<Ant>, anthill: Anthill, fps: Fps.Logger, state: State): void {
-  const { cellwidth, layer, gradient } = state;
+function loop (ants: Array<Ant>, anthill: Anthill, fpsStats: Stats.Stat, antStats:Stats.Stat,  consts: State): void {
+  //const { cellwidth, layer, gradient } = state;
 
 
   // a hack. TODO: find something better.
@@ -217,17 +217,26 @@ function loop (ants: Array<Ant>, anthill: Anthill, fps: Fps.Logger, state: State
 
     anthill = setState(ant.coords.x, ant.coords.y, anthill, (state + 1) % anthill.maxStates);
 
+    // TODO: no!
     if (DRAW_ANTS) {
-      Layer.draw( drawAnt(newCoords, "rgb(255,0,0)", cellwidth ), layer );
+      Layer.draw( drawAnt(newCoords, "rgb(255,0,0)", consts.cellwidth ), consts.layer );
     }
-    Layer.draw ( drawAnt(ant.coords, gradient[state], cellwidth ), layer );
+    Layer.draw ( drawAnt(ant.coords, consts.gradient[state], consts.cellwidth ), consts.layer );
 
     return createAnt(newCoords, ant.rule, newOrientation);
   });
 
+  fpsStats = 
+    Util.pipe( fpsStats )
+      ( Stats.onUpdate( s => {s.stat += 1; return s;} )
+      , Stats.onInterval( s => {s.log(s.stat); s.stat = 0; return s;} )
+      );
+  
+  antStats = Stats.onInterval( s => {s.log(ants.length+""); return s;})(antStats);
+
   window.requestAnimationFrame(
-    () => 
-      loop( ants, anthill, Fps.update(fps), state )
+    (t) => 
+      loop( ants, anthill, fpsStats, antStats, consts )
   );
 }
 
@@ -342,11 +351,12 @@ export function main(config: Config): void {
 
   const gradient = Gradient.create(states);
 
-  const fps = Fps.create(s => getElementByQuery("#fps").innerHTML = s);
+  const fpsStats = Stats.create( s => getElementByQuery("#stats_fps").innerHTML = s, 1000, 0);
+  const antStats = Stats.create( s => getElementByQuery("#stats_ants").innerHTML = s, 1000); 
 
   requestAnimationFrame(
     () => 
-      loop( ants, anthill, fps, { cellwidth, layer : layerAnthill, gradient, fps } )
+      loop( ants, anthill, fpsStats, antStats, { cellwidth, layer : layerAnthill, gradient } )
   );
 }
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-CORE_FILES="./src/random.ts ./src/coords.ts ./src/gradient.ts ./src/fps-log.ts ./src/layer.ts ./src/langton.ts"
+CORE_FILES="./src/langton.ts"
 GUI_FILES="./src/adjust.ts"
 
 DEST="./rel"
