@@ -3,15 +3,69 @@
 <head>
   <title>Langton's Anthill</title>
   <meta charset="utf-8">
+  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Nunito" />
   <link href="/style/style.css" type="text/css" rel="stylesheet" />
+  
+  <script data-main="../rel/langton.js" src="lib/require.js"></script>
 </head>
 <body>
   <h1>Langton's Anthill</h1>
-  <div id="anthill"></div>
+  <div id="layers">
+    <canvas id="layer1-anthill"></canvas>
+    <canvas id="layer2-antdropper"></canvas>
+  </div>
+  <div id="sidebar">
+    <section>
+      <h2>Settings</h2>
+      <ol>
+        <li>
+          <label for="amount">Drop ants per click:</label><br>
+          <input type="range" min="1" max="500" value="1" class="slider" id="amount">
+          <span class="slider_feedback" id="show_amount">&nbsp;&nbsp;</span>
+        </li>
+        <li>
+          <label for="radius">Radius of drop-area:</label><br>
+          <input type="range" min="5" max="100" value="20" class="slider" id="radius">
+          <span class="slider_feedback" id="show_radius">&nbsp;&nbsp;</span>
+        </li>
+        <li>
+            <input type="checkbox" checked="checked" id="drawAnts"> <label for="drawAnts">Show ants?</label>
+          
+        </li>
+      </ol>
+    </section>
+    <section>
+        <h2>Stats</h2>
+        <div id="stats"><span class="stat_feedback" id="stats_fps">60</span>FPS at <span class="stat_feedback" id="stats_ants">0</span> ants</div>
+      </section>
+    <section>
+      <h2>About</h2>
+      <article>
+          <p>Langton's Anthill is a 2-dimensional cellular automaton based on <a href="https://en.wikipedia.org/wiki/Langton%27s_ant" title="Wikipedia (en) page for Langton's ant">Langton's Ant</a>.</p> But instead of the original two states (on/off, alive/dead), cell on the anthill have 255 states. Accordingly, the ants follow a list of 255 left/right rules. Every ant has a randomly generated, more or less unique set of rules it follows while hopping from cell to cell.</p>
+          <p>In the simulation the state of each cell is represented by a shade of grey where white represents the state 0 and black the state 255. If a cell has state 255 and gets increased once more it flips to state 0.</p>
+      </article>
+    </section>
+    <section>
+      <article>
+          <h2>What can I do?</h2>
+          <p>By clicking on the screen you can drop ants on the anthill. Adjust the drop area and the amount of ants per drop with the sliders above.</p>
+          <p>Then just lean back and enjoy the tiny little ants crawling over your screen. They build structures that look organic but not random. They build highways between structures and follow them. They meet and seperate. Sometimes they travel together. I even saw them dancing.</p>
+
+      </article>
+    </section>
+    <section>
+      <h2>Source</h2>
+      <a href="https://github.com/bubens/LangtonsAnthill" title="Github repository for Langton's Anthill">Langton's Anthill on github.com</a>
+    </section>
+  </div>
+  
   <footer>
     <a href="about.html">About</a> |
     <a href="https://github.com/bubens/LangtonsAnthill">Source</a>
   </footer>
-  <script type="text/javascript" src="rel/langton.js"></script>
+  <!--<script src="rel/langton.js"></script>-->
+  <script src="rel/adjust.js"></script>
+  <script>
+  </script>
 </body>
 </html>
