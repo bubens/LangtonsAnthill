@@ -54,11 +54,7 @@ function randomOrientation(generator?: () => number): Orientation {
   return 0;
 }
 
-function randomPolarCoord(r: number): Coords.Polar {
-  return Coords.createPolar(
-    Random.randomInt(0, r)
-    , Random.randomInt(0, 360));
-}
+
 
 function generateRule(l: number): Rule {
   return Array(l).fill(0).map(() => randomDirection());
@@ -270,10 +266,7 @@ export function main(config: Config): void {
         Array(antdropper.amount)
           .fill(antdropper.radius)
           .map(
-            r =>
-              Coords.polarToCartesian(
-                randomPolarCoord(r)
-              )
+            Coords.randomCartesianInRadius
           )
           .map(
             coords =>
@@ -300,20 +293,41 @@ export function main(config: Config): void {
 
   const guiRadius = <HTMLInputElement>getElementByQuery("#radius");
   const guiRadiusShow = <HTMLElement>getElementByQuery("#show_radius");
+  const lastRadius = localStorage.getItem("last_radius");
+  if ( lastRadius ) {
+    guiRadius.value = lastRadius;
+    guiRadiusShow.innerHTML = lastRadius;
+    antdropper.radius = parseInt(lastRadius, 10);
+  }
+  else {
+    guiRadiusShow.innerHTML = "50";
+    antdropper.amount = 50;
+  }
   guiRadius
     .addEventListener(
       "input"
-      , function (event: Event): Boolean {
-        event.preventDefault();
-        const x = guiRadius.valueAsNumber;
-        guiRadiusShow.innerHTML = "" + x;
-        antdropper.radius = x;
-        return false;
+      , (event: Event): Boolean => {
+          event.preventDefault();
+          const x = guiRadius.valueAsNumber;
+          guiRadiusShow.innerHTML = "" + x;
+          antdropper.radius = x;
+          localStorage.setItem("last_radius", "" + x);
+          return false;
       }
     );
 
   const guiAmount = <HTMLInputElement>getElementByQuery("#amount");
   const guiAmountShow = <HTMLElement>getElementByQuery("#show_amount");
+  const lastAmount = localStorage.getItem("last_amount");
+  if ( lastAmount ) {
+    guiAmount.value = lastAmount;
+    guiAmountShow.innerHTML = lastAmount;
+    antdropper.amount = parseInt(lastAmount, 10);
+  }
+  else {
+    guiAmountShow.innerHTML = "1";
+    antdropper.amount = 1;
+  }
   guiAmount
     .addEventListener(
       "input"
@@ -322,6 +336,7 @@ export function main(config: Config): void {
         const x = guiAmount.valueAsNumber;
         guiAmountShow.innerHTML = "" + x;
         antdropper.amount = x;
+        localStorage.setItem("last_amount", "" + x);
         return false;
       }
     );

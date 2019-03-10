@@ -1,3 +1,5 @@
+import * as Random from "./random";
+
 export interface Cartesian {
   x: number
   ; y: number
@@ -39,3 +41,12 @@ export const cartesianToPolar =
 		}
 	);
 
+export const randomPolarCoord = (r: number): Polar => 
+	createPolar(
+		Random.randomInt(0, r)
+	  , Random.randomInt(0, 360));
+
+export const randomCartesianInRadius = (r: number): Cartesian =>
+	polarToCartesian(
+		randomPolarCoord( r )
+	);
