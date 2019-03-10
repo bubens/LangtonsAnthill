@@ -44,7 +44,6 @@ h1 {
   border: 3px solid #000;
   border-radius: 5px;
   background-color: #00CACA;
-  
 }
 
 #sidebar h2 {
@@ -54,30 +53,45 @@ h1 {
   padding: 10px;
 }
 
-#fps {
-  
+#sidebar section {
+  margin: 20px 15px 0 15px;
+  text-align: justify;
 }
 
-article {
+#sidebar ol {
+  list-style: none;
+}
+
+#sidebar li {
+  margin-bottom: 15px;
+}
+
+input[type="range"] {
   width: 75%;
-  margin: auto;
-  color: #787878;
-  line-height: 150%;
 }
 
-article h1 {
-  position: relative;
-  width: 100%;
-  margin: 10px;
-  text-align: center;
-  font-size: 24px;
+input[type="checkbox"] {
+  margin-right: 10px;
+  width: 20px;
+  height: 20px;
+  vertical-align: bottom;
+  background-color: #fff;
+  border: solid #000 1px;
 }
 
-article h2 {
-  font-size: 22px;
-  margin-top: 20px;
+.slider_feedback {
+  width: 25%;
+  text-align: right;
+  font-size: 200%;
+  margin-left: 10px;
+  font-family: monospace;
 }
 
+.stat_feedback {
+  font-family: monospace;
+  font-size: 150%;
+  margin: 0 5px 0 5px;
+}
 
 
 footer {
@@ -92,10 +106,13 @@ footer {
   
 }
 
+
+
 footer a {
   color: #000;
   text-decoration: none;
   padding: 2px;
+  
 }
 
 footer a:hover {

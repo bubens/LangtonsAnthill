@@ -13,25 +13,43 @@
     <canvas id="layer2-antdropper"></canvas>
   </div>
   <div id="sidebar">
-    <h2>Settings</h2>
-    <ol>
-      <li>
-        <label for="amount">Drop ants per click</label>
-        <input type="range" min="1" max="100" value="1" class="slider" id="amount">
-        <div id="show_amount">50</div>
-      </li>
-      <li>
-        <label for="radius">Radius of drop-area</label>
-        <input type="range" min="5" max="100" value="20" class="slider" id="radius">
-        <div id="show_radius">20</div>
-      </li>
-      <li>
-        <label for="drawAnts">Draw ants?</label>
-        <input type="checkbox" checked="checked" id="drawAnts">
-      </li>
-    </ol>
-    <h2>Stats</h2>
-    <div id="stats"><span id="stats_fps">60</span>FPS at <span id="stats_ants">0</span> ants</div>
+    <section>
+      <h2>Settings</h2>
+      <ol>
+        <li>
+          <label for="amount">Drop ants per click:</label><br>
+          <input type="range" min="1" max="500" value="1" class="slider" id="amount">
+          <span class="slider_feedback" id="show_amount">50</span>
+        </li>
+        <li>
+          <label for="radius">Radius of drop-area:</label><br>
+          <input type="range" min="5" max="100" value="20" class="slider" id="radius">
+          <span class="slider_feedback" id="show_radius">20</span>
+        </li>
+        <li>
+            <input type="checkbox" checked="checked" id="drawAnts"> <label for="drawAnts">Show ants?</label>
+          
+        </li>
+      </ol>
+    </section>
+    <section>
+      <h2>Stats</h2>
+      <div id="stats"><span class="stat_feedback" id="stats_fps">60</span>FPS at <span class="stat_feedback" id="stats_ants">0</span> ants</div>
+    </section>
+    <section>
+      <h2>About</h2>
+      <article>
+          <p>Langton's Anthill is a 2-dimensional cellular automaton based on <a href="https://en.wikipedia.org/wiki/Langton%27s_ant">Langton's Ant</a>.</p> But instead of the original two states (on/off, alive/dead), cell on the anthill have 255 states. Accordingly, the ants follow a list of 255 left/right rules. Every ant has a randomly generated, unique set of rules it follows while hopping from cell to cell.</p>
+          <p>In the simulation the state of each cell is represendet by a shade of grey where white is represents the state 0 and black the state 255. If a cell hits 255 and gets increased once more, it flips and the current state is then zero again.</p>
+      </article>
+    </section>
+    <section>
+      <article>
+          <h2>What can I do?</h2>
+          <p>By clicking on the screen you can add little tiny ants to the anthill. Every ant that's placed on the anthill has a randomly generated set of rules. Do it as often as you like. A reasonably modern browser should be able to handle up to 2000 and more ants.</p>
+          <p>Then just lean back and enjoy the tiny little ants crawling over your screen. Look at how lifelike their movements seem. They build structures that look organic but not random. The build highways between structures and follow them. They meet and seperate. Sometimes they travel together. I even saw them dancing once or twice. It's fascinating yet so simple...</p>
+      </article>
+    </section>
   </div>
   
   <footer>
