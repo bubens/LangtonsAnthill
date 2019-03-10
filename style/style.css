@@ -1,17 +1,10 @@
-@font-face {
-    font-family: 'linden_hillregular';
-    src: url('LindenHill-webfont.woff') format('woff');
-    font-weight: normal;
-    font-style: normal;
-}
-
 * {
   margin: 0;
   padding: 0;
 }
 
 html {
-  font-family: linden_hillregular;
+  font-family: Nunito;
 }
 
 h1 {
@@ -44,17 +37,26 @@ h1 {
   border: 3px solid #000;
   border-radius: 5px;
   background-color: #00CACA;
+  font-size: 85%;
+}
+
+#sidebar a {
+  color: #000;
+}
+
+#sidebar a[href^="http"]:before {
+  content: "🔗";
+  color: #000;
 }
 
 #sidebar h2 {
-  font-size: 24px;
   width: 100%;
   text-align: center;
   padding: 10px;
 }
 
 #sidebar section {
-  margin: 20px 15px 0 15px;
+  margin: 10px 15px 0 15px;
   text-align: justify;
 }
 
