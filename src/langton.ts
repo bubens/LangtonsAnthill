@@ -17,52 +17,13 @@ interface Config {
 type Anttrap = Ant[];
 let anttrap: Anttrap = [];
 
-
-// BEGIN Ant
-type Up = 0;
-type Right = 1;
-type Down = 2;
-type Left = 3;
-
-type Direction = Left | Right;
-type Orientation = Left | Right | Up | Down;
-
-type Rule = Array<Direction>;
-
-
-
-
-// BEGIN Ant
-interface Ant {
-  coords: Coords.Cartesian
-  ; orientation: Orientation
-  ; rule: Rule
-}
-
-function randomDirection(generator?: () => number): Direction {
-  return Random.randomInt(0, 1, generator) === 0 ? 1 : 3;
-}
-
-function randomOrientation(generator?: () => number): Orientation {
-  const o = Random.randomInt(0, 3, generator);
-  switch (o) {
-    case 0: return 0;
-    case 1: return 1;
-    case 2: return 2;
-    case 3: return 3;
+function drawAnt (coords: Coords.Cartesian, color: string, cellwidth: number): (c:CanvasRenderingContext2D)=>void {
+  return function (context) {
+    context.fillStyle = color;
+    context.fillRect(coords.x * cellwidth, coords.y * cellwidth, cellwidth, cellwidth);
   }
-  return 0;
 }
 
-
-
-function generateRule(l: number): Rule {
-  return Array(l).fill(0).map(() => randomDirection());
-}
-
-function createAnt(coords: Coords.Cartesian, rule: Rule, orientation: Orientation): Ant {
-  return { coords, rule, orientation };
-}
 
 function createAnts(numberOfAnts: number, states: number, width: number, height: number): Ant[] {
   return Array(numberOfAnts)
@@ -74,59 +35,6 @@ function createAnts(numberOfAnts: number, states: number, width: number, height:
         , 0)
     );
 }
-
-function drawAnt(coords: Coords.Cartesian, color: string, cellwidth: number): (c:CanvasRenderingContext2D)=>void {
-  return function (context) {
-    context.fillStyle = color;
-    context.fillRect(coords.x * cellwidth, coords.y * cellwidth, cellwidth, cellwidth);
-  }
-}
-
-function calcNewOrientation(curOrientation: Orientation, direction: Direction): Orientation {
-  if (direction === 1) {
-    switch (curOrientation) {
-      case 0: return 1;
-      case 1: return 2;
-      case 2: return 3;
-      case 3: return 0;
-    }
-  }
-  else {
-    switch (curOrientation) {
-      case 0: return 3;
-      case 1: return 0;
-      case 2: return 1;
-      case 3: return 2;
-    }
-  }
-  return 0;
-}
-
-function calcNewCoords(curCoords: Coords.Cartesian, orientation: Orientation, width: number, height: number): Coords.Cartesian {
-  switch (orientation) {
-    case 0:
-      return Coords.createCartesian(
-        curCoords.x
-        , (curCoords.y + 1) % height
-      );
-    case 1:
-      return Coords.createCartesian(
-        (curCoords.x + 1) % width
-        , curCoords.y
-      );
-    case 2:
-      return Coords.createCartesian(
-        curCoords.x
-        , (curCoords.y - 1 < 0) ? height - 1 : curCoords.y - 1
-      );
-    case 3:
-      return Coords.createCartesian(
-        (curCoords.x - 1 < 0) ? width - 1 : curCoords.x - 1
-        , curCoords.y
-      );
-  }
-}
-
 
 
 

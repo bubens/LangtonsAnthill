@@ -10,7 +10,6 @@ export interface Polar {
   ; phi: number
 }
 
-
 export const createCartesian = 
 	(x: number, y: number): Cartesian =>
 		({x, y});
@@ -41,12 +40,29 @@ export const cartesianToPolar =
 		}
 	);
 
-export const randomPolarCoord = (r: number): Polar => 
-	createPolar(
-		Random.randomInt(0, r)
-	  , Random.randomInt(0, 360));
+export const randomPolar = 
+	(r: number, generator?:Random.Generator<number>): Polar => 
+		createPolar(
+			Random.randomInt(0, r, generator)
+		  , Random.randomInt(0, 360), generator);
 
-export const randomCartesianInRadius = (r: number): Cartesian =>
-	polarToCartesian(
-		randomPolarCoord( r )
-	);
+export const randomCartesianInRadius = 
+	(r: number, generator?:Random.Generator<number>): Cartesian =>
+		polarToCartesian(
+			randomPolar( r, generator )
+		);
+
+export const randomCartesian = 
+	(l:number, w:number, generator?:Random.Generator<number>): Cartesian =>
+		createCartesian(
+			Random.randomInt(0, l, generator)
+			, Random.randomInt(0,w, generator)
+		);
+
+export const randomPolarInSquare =
+	(l:number, w:number, generator?:Random.Generator<number>): Polar =>
+		cartesianToPolar(
+			randomCartesian(w, l)
+		);
+
+
