@@ -1,8 +1,6 @@
 import * as Random from "./random";
 import * as Coords from "./coords";
-import * as Layer from "./layer";
 
-// BEGIN Ant
 type Up = 0;
 type Right = 1;
 type Down = 2;
@@ -13,10 +11,6 @@ export type Orientation = Left | Right | Up | Down;
 
 export type Rule = Direction[];
 
-
-
-
-// BEGIN Ant
 export interface Ant {
   coords: Coords.Cartesian
   ; orientation: Orientation
@@ -29,7 +23,9 @@ export const create =
 
 export const generateRule =
   (l: number): Rule =>
-    Array(l).fill(0).map(() => randomDirection());
+    Array(l).map(
+      () => randomDirection()
+    );
 
 
 export const randomDirection =
@@ -52,33 +48,47 @@ export const randomOrientation =
 
 
 export const nextOrientation =
-  (direction: Direction, {orientation}: Ant): Orientation => {
-    direction === 1
-      ? (orientation+1) % 4
-      : (orientation+3) % 4;
+  (direction: Direction, orientation: Orientation): Orientation => {
+    if (direction === 1) {
+      switch (orientation) {
+        case 0: return 1;
+        case 1: return 2;
+        case 2: return 3;
+        case 3: return 0;
+      }
+    }
+    else {
+      switch (orientation) {
+        case 0: return 3;
+        case 1: return 0;
+        case 2: return 1;
+        case 3: return 2;
+      }
+    }
+  };
 
 export const nextCoords =
-  (curCoords: Coords.Cartesian, orientation: Orientation, width: number, height: number): Coords.Cartesian =>
+  ( coords: Coords.Cartesian, orientation: Orientation ): Coords.Cartesian => {
     switch (orientation) {
       case 0:
         return Coords.createCartesian(
-          curCoords.x
-          , (curCoords.y + 1) % height
+          coords.x
+          , coords.y + 1
         );
       case 1:
         return Coords.createCartesian(
-          (curCoords.x + 1) % width
-          , curCoords.y
+          coords.x + 1
+          , coords.y
         );
       case 2:
         return Coords.createCartesian(
-          curCoords.x
-          , (curCoords.y - 1 < 0) ? height - 1 : curCoords.y - 1
+          coords.x
+          , coords.y - 1
         );
       case 3:
         return Coords.createCartesian(
-          (curCoords.x - 1 < 0) ? width - 1 : curCoords.x - 1
-          , curCoords.y
+          coords.x - 1
+          , coords.y
         );
     }
   }

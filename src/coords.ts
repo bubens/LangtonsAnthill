@@ -44,7 +44,8 @@ export const randomPolar =
 	(r: number, generator?:Random.Generator<number>): Polar => 
 		createPolar(
 			Random.randomInt(0, r, generator)
-		  , Random.randomInt(0, 360), generator);
+		  , Random.randomInt(0, 360, generator)
+		);
 
 export const randomCartesianInRadius = 
 	(r: number, generator?:Random.Generator<number>): Cartesian =>
@@ -53,10 +54,10 @@ export const randomCartesianInRadius =
 		);
 
 export const randomCartesian = 
-	(l:number, w:number, generator?:Random.Generator<number>): Cartesian =>
+	(w:number, h:number, generator?:Random.Generator<number>): Cartesian =>
 		createCartesian(
-			Random.randomInt(0, l, generator)
-			, Random.randomInt(0,w, generator)
+			Random.randomInt(0, w, generator)
+			, Random.randomInt(0, h, generator)
 		);
 
 export const randomPolarInSquare =
