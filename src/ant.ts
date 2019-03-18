@@ -47,7 +47,7 @@ export const randomOrientation =
  };
 
 
-export const nextOrientation =
+export const turn =
   (direction: Direction, orientation: Orientation): Orientation => {
     if (direction === 1) {
       switch (orientation) {
@@ -67,7 +67,7 @@ export const nextOrientation =
     }
   };
 
-export const nextCoords =
+export const step =
   ( coords: Coords.Cartesian, orientation: Orientation ): Coords.Cartesian => {
     switch (orientation) {
       case 0:
