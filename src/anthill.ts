@@ -1,8 +1,8 @@
+import * as Ant from "./ant";
 import * as Coords from "./coords";
 import { Config } from "./config";
+import Gradient from "./gradient";
 import * as Util from "./util";
-import * as Ant from "./ant";
-import Gradient, { Color } from "./gradient";
 
 
 interface QueueItem {

@@ -7,6 +7,8 @@ export interface SliderConfig {
 
 export interface Config {
     readonly states: number
+    , readonly width: number
+    , readonly height: number
     , readonly cellwidth: number
     , readonly numberOfAnts: number
     , readonly anthillID: string
@@ -19,6 +21,8 @@ export interface Config {
 
 const config: Config = {
     states: 255
+    , width: 1200
+    , height: 800
     , cellwidth: 2
     , numberOfAnts: 0
     , anthillID: "#layer1-anthill"

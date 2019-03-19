@@ -63,7 +63,7 @@ export const randomCartesian =
 export const randomPolarInSquare =
 	(l:number, w:number, generator?:Random.Generator<number>): Polar =>
 		cartesianToPolar(
-			randomCartesian(w, l)
+			randomCartesian(w, l, generator)
 		);
 
 

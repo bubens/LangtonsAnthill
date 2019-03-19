@@ -1,7 +1,7 @@
 export type Generator<A>= () => A;
 
 export const random = 
-	(generator: Generator = Math.random):number =>
+	(generator: Generator<number> = Math.random):number =>
 		generator();
 
 
