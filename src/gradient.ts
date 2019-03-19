@@ -13,6 +13,12 @@ export default class Gradient {
 				.reverse();
 	}
 
+	public asStrings(): Array<string> {
+		return this.gradient.map(
+			color => color.asString()
+		);
+	}
+
 	private toGrey( v:number ): Color {
 		return new Color(v,v,v);
 	}

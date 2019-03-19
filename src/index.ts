@@ -5,13 +5,13 @@ import * as Gradient from "./gradient";
 import * as Stats from "./stats";
 import * as Layer from "./layer";
 import * as Ant from "./ant";
-import * as Anthill from "./anthill";
+import Anthill from "./anthill";
 import Antdropper from "./antdropper";
 import AntVisibility from "./visibility";
-import config, {Config} from "./config";
+import config, { Config } from "./config";
 
 
-const {cellwidth, states} = config;
+const { cellwidth, states } = config;
 const layerAnthill =
   Layer.create(config.anthillID);
 
@@ -21,50 +21,33 @@ const width =
 const height =
   Math.floor(layerAnthill.element.height / cellwidth);
 
-const anthill = 
-  Anthill.create(width, height, states);
+const anthill = new Anthill(width, height, config);
 
-// Initial ants go here
-const ants =
-  Array(config.numberOfAnts)
-    .fill(config.states)
-    .map( (states) =>
-      Ant.create(
-        Coords.randomCartesian( width, height )
-        , Ant.generateRule( states )
-        , Ant.randomOrientation()
-      )
-    );
-
-// Dropped ants go here
-const anttrap: Ant.Ant[] = [];
 
 // Handles the dropping of ants
-const antdropper =
-  new Antdropper( config );
-
-antdropper.onDrop( ants => anttrap.concat(ants) );
+const antdropper = new Antdropper(config);
+antdropper.onDrop( anthill.addAnts );
 antdropper.init();
 
 // will ants get drawn?
-const antsVisible =
-  new AntVisibility( config.antVisibilityID );
+const antsVisible = new AntVisibility(config.antVisibilityID);
+antsVisible.onChange( anthill.setDrawAnts );
 antsVisible.init();
 
 // Handles sequential stat updates
-const fpsStats = 
+const fpsStats =
   Stats.create(
-    s => 
+    s =>
       Util.getElementByQuery("#stats_fps").innerHTML = s,
     1000, 0);
 
-const antStats = 
+const antStats =
   Stats.create(
-    s => 
+    s =>
       Util.getElementByQuery("#stats_ants").innerHTML = s,
     1000);
 
-const gradient = 
+const gradient =
   Gradient.create(states);
 
 
@@ -85,7 +68,7 @@ const loop = (ants: Ant.Ant[], anthill: Anthill.Anthill): void => {
     const newOrientation =
       Ant.nextOrientation(direction, ant.orientation);
 
-    const newCoords = 
+    const newCoords =
       Ant.nextCoords(ant.coords, newOrientation);
 
     anthill =
@@ -103,7 +86,7 @@ const loop = (ants: Ant.Ant[], anthill: Anthill.Anthill): void => {
   fpsStats =
     Util.pipe(fpsStats)
       (Stats.onUpdate(s => { s.stat += 1; return s; })
-      , Stats.onInterval(s => { s.log(s.stat); s.stat = 0; return s; })
+        , Stats.onInterval(s => { s.log(s.stat); s.stat = 0; return s; })
       );
 
   antStats =
@@ -116,7 +99,7 @@ const loop = (ants: Ant.Ant[], anthill: Anthill.Anthill): void => {
 }
 
 
-  
+
 function drawAnt(coords: Coords.Cartesian, color: string, cellwidth: number): (c: CanvasRenderingContext2D) => void {
   return function (context) {
     context.fillStyle = color;
