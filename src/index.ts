@@ -63,3 +63,5 @@ const loop = (antstat: Stats.Stat, fpsstat: Stats.Stat): void => {
     loop(antstat, fpsstat);
   });
 };
+
+loop(antStats, fpsStats);
