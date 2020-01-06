@@ -1,5 +1,3 @@
-rel/*
-style/*
-!style/style.css
-src/xxx*
+rel
+tmp*
 node_modules
