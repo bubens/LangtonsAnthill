@@ -19,7 +19,7 @@ function getElementByQuery(query: string): Element {
 }
 
 function getDrawingContext(element: HTMLCanvasElement, attributes?: ContextAttributes): CanvasRenderingContext2D {
-	const context: CanvasRenderingContext2D | null = element.getContext("2d", attributes);
+	const context = <CanvasRenderingContext2D | null>element.getContext("2d", attributes);
 
 	if (context === null) {
 		throw new Error("Can't get rendering context for element " + element);

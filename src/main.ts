@@ -6,8 +6,7 @@ import * as Stats from "./stats";
 import * as Layer from "./layer";
 
 interface Config {
-  states: number
-  ; cellwidth: number
+  cellwidth: number
   ; numberOfAnts: number
   ; anthillID: string
   ; antdropperID: string
@@ -29,7 +28,11 @@ type Orientation = Left | Right | Up | Down;
 
 type Rule = Array<Direction>;
 
-
+const StorageKeys = {
+  dropRadius: "drop_radius",
+  antsPerClick: "ants_per_click",
+  showAnts: "show_ants"
+}
 
 
 // BEGIN Ant
@@ -56,21 +59,21 @@ function randomOrientation(generator?: () => number): Orientation {
 
 
 
-function generateRule(l: number): Rule {
-  return Array(l).fill(0).map(() => randomDirection());
+function generateRule(): Rule {
+  return Array(255).fill(0).map(() => randomDirection());
 }
 
 function createAnt(coords: Coords.Cartesian, rule: Rule, orientation: Orientation): Ant {
   return { coords, rule, orientation };
 }
 
-function createAnts(numberOfAnts: number, states: number, width: number, height: number): Ant[] {
+function createAnts(numberOfAnts: number, width: number, height: number): Ant[] {
   return Array(numberOfAnts)
     .fill(0)
     .map(() =>
       createAnt(
         Coords.createCartesian(Random.randomInt(0, width - 1), Random.randomInt(0, height - 1))
-        , generateRule(states)
+        , generateRule()
         , 0)
     );
 }
@@ -132,18 +135,16 @@ function calcNewCoords(curCoords: Coords.Cartesian, orientation: Orientation, wi
 
 // BEGINN Anthill
 interface Anthill {
-  area: Uint8Array
+  area: Uint16Array
   ; width: number
   ; height: number
-  ; maxStates: number
 }
 
-function createAnthill(width: number, height: number, maxStates: number): Anthill {
+function createAnthill(width: number, height: number): Anthill {
   return {
     width: width
     , height: height
-    , area: new Uint8Array(width * height).fill(0)
-    , maxStates: maxStates
+    , area: new Uint16Array(width * height).fill(0)
   };
 }
 
@@ -189,7 +190,6 @@ function getElementByQuery(query: string): Element {
 interface State {
   cellwidth: number
   , layer: Layer.Layer
-  , gradient: Gradient.Gradient
 }
 
 let DRAW_ANTS: boolean = true;
@@ -206,18 +206,18 @@ function loop(ants: Array<Ant>, anthill: Anthill, fpsStats: Stats.Stat, antStats
 
   ants = ants.map(function (ant: Ant) {
     const state: number = getState(ant.coords.x, ant.coords.y, anthill);
-    const direction: Direction = ant.rule[state];
+    const direction: Direction = ant.rule[state % 255];
 
     const newOrientation: Orientation = calcNewOrientation(ant.orientation, direction);
     const newCoords: Coords.Cartesian = calcNewCoords(ant.coords, newOrientation, anthill.width, anthill.height);
 
-    anthill = setState(ant.coords.x, ant.coords.y, anthill, (state + 1) % anthill.maxStates);
+    anthill = setState(ant.coords.x, ant.coords.y, anthill, (state + 1));
 
     // TODO: no!
     if (DRAW_ANTS) {
       Layer.draw(drawAnt(newCoords, "rgb(255,0,0)", consts.cellwidth), consts.layer);
     }
-    Layer.draw(drawAnt(ant.coords, consts.gradient[state], consts.cellwidth), consts.layer);
+    Layer.draw(drawAnt(ant.coords, Gradient.getColor(state), consts.cellwidth), consts.layer);
 
     return createAnt(newCoords, ant.rule, newOrientation);
   });
@@ -241,22 +241,31 @@ function loop(ants: Array<Ant>, anthill: Anthill, fpsStats: Stats.Stat, antStats
 
 
 export function main(config: Config): void {
-  const { cellwidth, states, numberOfAnts } = config;
-
+  const { cellwidth, numberOfAnts } = config;
 
   const layerAnthill = Layer.create("#layer1-anthill", { alpha: false });
 
-  const w = Math.floor(layerAnthill.element.width / cellwidth),
-    h = Math.floor(layerAnthill.element.height / cellwidth);
+  const rawWidth = layerAnthill.element.width,
+    rawHeight = layerAnthill.element.height,
+    w = Math.floor(rawWidth / cellwidth),
+    h = Math.floor(rawHeight / cellwidth);
 
+  Layer.draw(
+    ctx => {
+      ctx.fillStyle = "#000"; ctx.fillRect(0, 0, rawWidth, rawHeight);
+    },
+    layerAnthill
+  );
 
-  const ants = createAnts(numberOfAnts, states, w, h);
+  const ants = createAnts(numberOfAnts, w, h);
 
-  const anthill = createAnthill(w, h, states);
+  const anthill = createAnthill(w, h);
 
 
 
   const layerAntdropper = Layer.create("#layer2-antdropper");
+  layerAntdropper.context.strokeStyle = "#FFFFFF";
+
   const antdropper = createAntdropper(20, 1);
   layerAntdropper.element.addEventListener(
     "mousedown"
@@ -266,25 +275,15 @@ export function main(config: Config): void {
         Array(antdropper.amount)
           .fill(antdropper.radius)
           .map(
-            Coords.randomCartesianInRadius
-          )
-          .map(
-            coords =>
-              Coords.createCartesian(
-                Math.floor((coords.x + event.offsetX) / cellwidth)
-                , Math.floor((coords.y + event.offsetY) / cellwidth)
-              )
-          )
-          .map(
-            coords =>
-              createAnt(
-                coords
-                , generateRule(states)
-                , randomOrientation()
-              )
+            (r: number) => {
+              const randomCoords = Coords.randomCartesianInRadius(r);
+              const coordsWithOffset = Coords.createCartesian(
+                Math.floor((randomCoords.x + event.offsetX) / cellwidth)
+                , Math.floor((randomCoords.y + event.offsetY) / cellwidth)
+              );
+              return createAnt(coordsWithOffset, generateRule(), randomOrientation());
+            }
           );
-
-
       anttrap = newAnts;
 
       return false;
@@ -293,15 +292,26 @@ export function main(config: Config): void {
 
   const guiRadius = <HTMLInputElement>getElementByQuery("#radius");
   const guiRadiusShow = <HTMLElement>getElementByQuery("#show_radius");
-  const lastRadius = localStorage.getItem("last_radius");
-  if (lastRadius) {
-    guiRadius.value = lastRadius;
-    guiRadiusShow.innerHTML = lastRadius;
-    antdropper.radius = parseInt(lastRadius, 10);
+  const lastRadius = localStorage.getItem(StorageKeys.dropRadius);
+  if (lastRadius !== null) {
+    const r = parseInt(lastRadius, 10);
+    if (!isNaN(r)) {
+      guiRadius.value = lastRadius;
+      guiRadiusShow.innerHTML = lastRadius;
+      antdropper.radius = r;
+    }
+    else {
+      guiRadius.value = "50";
+      guiRadiusShow.innerHTML = "50";
+      antdropper.amount = 50;
+      localStorage.setItem(StorageKeys.dropRadius, "50");
+    }
   }
   else {
+    guiRadius.value = "50";
     guiRadiusShow.innerHTML = "50";
     antdropper.amount = 50;
+    localStorage.setItem(StorageKeys.dropRadius, "50");
   }
   guiRadius
     .addEventListener(
@@ -311,22 +321,33 @@ export function main(config: Config): void {
         const x = guiRadius.valueAsNumber;
         guiRadiusShow.innerHTML = "" + x;
         antdropper.radius = x;
-        localStorage.setItem("last_radius", "" + x);
+        localStorage.setItem(StorageKeys.dropRadius, "" + x);
         return false;
       }
     );
 
   const guiAmount = <HTMLInputElement>getElementByQuery("#amount");
   const guiAmountShow = <HTMLElement>getElementByQuery("#show_amount");
-  const lastAmount = localStorage.getItem("last_amount");
-  if (lastAmount) {
-    guiAmount.value = lastAmount;
-    guiAmountShow.innerHTML = lastAmount;
-    antdropper.amount = parseInt(lastAmount, 10);
+  const lastAmount = localStorage.getItem(StorageKeys.antsPerClick);
+  if (lastAmount !== null) {
+    const n = parseInt(lastAmount, 10);
+    if (!isNaN(n)) {
+      guiAmount.value = lastAmount;
+      guiAmountShow.innerHTML = lastAmount;
+      antdropper.amount = parseInt(lastAmount, 10);
+    }
+    else {
+      guiAmount.value = "1";
+      guiAmountShow.innerHTML = "1";
+      antdropper.amount = 1;
+      localStorage.setItem(StorageKeys.antsPerClick, "1");
+    }
   }
   else {
+    guiAmount.value = "1";
     guiAmountShow.innerHTML = "1";
     antdropper.amount = 1;
+    localStorage.setItem(StorageKeys.antsPerClick, "1");
   }
   guiAmount
     .addEventListener(
@@ -336,18 +357,30 @@ export function main(config: Config): void {
         const x = guiAmount.valueAsNumber;
         guiAmountShow.innerHTML = "" + x;
         antdropper.amount = x;
-        localStorage.setItem("last_amount", "" + x);
+        localStorage.setItem(StorageKeys.antsPerClick, "" + x);
         return false;
       }
     );
 
   const guiDrawAnts = <HTMLInputElement>getElementByQuery("#drawAnts");
+  const drawAnts = localStorage.getItem("show_ants");
+  if (drawAnts === null || drawAnts === "true") {
+    guiDrawAnts.checked = true;
+    localStorage.setItem(StorageKeys.showAnts, "true");
+    DRAW_ANTS = true;
+  }
+  else {
+    guiDrawAnts.checked = false;
+    localStorage.setItem(StorageKeys.showAnts, "false");
+    DRAW_ANTS = false;
+  }
   guiDrawAnts
     .addEventListener(
       "input"
       , function (event: Event): Boolean {
         // uhhh... bad!!!
         DRAW_ANTS = guiDrawAnts.checked;
+        localStorage.setItem(StorageKeys.showAnts, DRAW_ANTS ? "true" : "false");
         return false;
       }
     );
@@ -355,6 +388,7 @@ export function main(config: Config): void {
   layerAntdropper.element.addEventListener(
     "mousemove"
     , function (event: MouseEvent): Boolean {
+      //layerAntdropper.context.strokeStyle = "#FFFFFF";
       layerAntdropper.context.clearRect(0, 0, 9999, 9999);
       layerAntdropper.context.beginPath();
       layerAntdropper.context.arc(event.offsetX, event.offsetY, antdropper.radius, 0, Math.PI * 2);
@@ -364,20 +398,17 @@ export function main(config: Config): void {
   );
 
 
-  const gradient = Gradient.create(states);
-
   const fpsStats = Stats.create(s => getElementByQuery("#stats_fps").innerHTML = s, 1000, 0);
   const antStats = Stats.create(s => getElementByQuery("#stats_ants").innerHTML = s, 1000);
 
   requestAnimationFrame(
     () =>
-      loop(ants, anthill, fpsStats, antStats, { cellwidth, layer: layerAnthill, gradient })
+      loop(ants, anthill, fpsStats, antStats, { cellwidth, layer: layerAnthill })
   );
 }
 
 main({
-  states: 255
-  , cellwidth: 2
+  cellwidth: 2
   , numberOfAnts: 0
   , anthillID: "#layer1-anthill"
   , antdropperID: "#layer2-antdropper"
