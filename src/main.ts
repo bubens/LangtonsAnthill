@@ -67,7 +67,7 @@ function createAnt(coords: Coords.Cartesian, rule: Rule, orientation: Orientatio
   return { coords, rule, orientation };
 }
 
-function createAnts(numberOfAnts: number, width: number, height: number): Ant[] {
+function initAnts(numberOfAnts: number, width: number, height: number): Ant[] {
   return Array(numberOfAnts)
     .fill(0)
     .map(() =>
@@ -140,7 +140,7 @@ interface Anthill {
   ; height: number
 }
 
-function createAnthill(width: number, height: number): Anthill {
+function initAnthill(width: number, height: number): Anthill {
   return {
     width: width
     , height: height
@@ -166,8 +166,137 @@ interface Antdropper {
   , amount: number
 }
 
-function createAntdropper(radius: number, amount: number): Antdropper {
-  return { radius, amount };
+// Create and setup layer with the circle-thingy
+function initAntdropper(radius: number, amount: number, cellwidth: number, layer: Layer.Layer): Antdropper {
+  const antdropper = { radius, amount };
+
+  layer.element.addEventListener(
+    "mousedown"
+    , function (event: MouseEvent): Boolean {
+      event.preventDefault();
+      const newAnts =
+        Array(antdropper.amount)
+          .fill(antdropper.radius)
+          .map(
+            (r: number) => {
+              const randomCoords = Coords.randomCartesianInRadius(r);
+              const coordsWithOffset = Coords.createCartesian(
+                Math.floor((randomCoords.x + event.offsetX) / cellwidth)
+                , Math.floor((randomCoords.y + event.offsetY) / cellwidth)
+              );
+              return createAnt(coordsWithOffset, generateRule(), randomOrientation());
+            }
+          );
+      anttrap = newAnts;
+
+      return false;
+    }
+  );
+  return antdropper;
+}
+
+function initRadiusSlider(antdropper: Antdropper): HTMLInputElement {
+  const slider = <HTMLInputElement>getElementByQuery("#radius");
+  const display = <HTMLElement>getElementByQuery("#show_radius");
+  const lastRadius = localStorage.getItem(StorageKeys.dropRadius);
+  if (lastRadius !== null) {
+    const r = parseInt(lastRadius, 10);
+    if (!isNaN(r)) {
+      slider.value = lastRadius;
+      display.innerHTML = lastRadius;
+      antdropper.radius = r;
+    }
+    else {
+      slider.value = "50";
+      display.innerHTML = "50";
+      antdropper.amount = 50;
+      localStorage.setItem(StorageKeys.dropRadius, "50");
+    }
+  }
+  else {
+    slider.value = "50";
+    display.innerHTML = "50";
+    antdropper.amount = 50;
+    localStorage.setItem(StorageKeys.dropRadius, "50");
+  }
+  slider
+    .addEventListener(
+      "input"
+      , (event: Event): Boolean => {
+        event.preventDefault();
+        const x = slider.valueAsNumber;
+        display.innerHTML = "" + x;
+        antdropper.radius = x;
+        localStorage.setItem(StorageKeys.dropRadius, "" + x);
+        return false;
+      }
+    );
+
+  return slider;
+}
+function initAmountSlider(antdropper: Antdropper): HTMLInputElement {
+  const slider = <HTMLInputElement>getElementByQuery("#amount");
+  const display = <HTMLElement>getElementByQuery("#show_amount");
+  const lastAmount = localStorage.getItem(StorageKeys.antsPerClick);
+  if (lastAmount !== null) {
+    const n = parseInt(lastAmount, 10);
+    if (!isNaN(n)) {
+      slider.value = lastAmount;
+      display.innerHTML = lastAmount;
+      antdropper.amount = parseInt(lastAmount, 10);
+    }
+    else {
+      slider.value = "1";
+      display.innerHTML = "1";
+      antdropper.amount = 1;
+      localStorage.setItem(StorageKeys.antsPerClick, "1");
+    }
+  }
+  else {
+    slider.value = "1";
+    display.innerHTML = "1";
+    antdropper.amount = 1;
+    localStorage.setItem(StorageKeys.antsPerClick, "1");
+  }
+  slider
+    .addEventListener(
+      "input"
+      , function (event: Event): Boolean {
+        event.preventDefault();
+        const x = slider.valueAsNumber;
+        display.innerHTML = "" + x;
+        antdropper.amount = x;
+        localStorage.setItem(StorageKeys.antsPerClick, "" + x);
+        return false;
+      }
+    );
+  return slider;
+}
+
+function initDrawAntsCheckbox(): HTMLInputElement {
+  const checkbox = <HTMLInputElement>getElementByQuery("#drawAnts");
+  const drawAnts = localStorage.getItem("show_ants");
+  if (drawAnts === null || drawAnts === "true") {
+    checkbox.checked = true;
+    localStorage.setItem(StorageKeys.showAnts, "true");
+    DRAW_ANTS = true;
+  }
+  else {
+    checkbox.checked = false;
+    localStorage.setItem(StorageKeys.showAnts, "false");
+    DRAW_ANTS = false;
+  }
+  checkbox
+    .addEventListener(
+      "input"
+      , function (event: Event): Boolean {
+        // uhhh... bad!!!
+        DRAW_ANTS = checkbox.checked;
+        localStorage.setItem(StorageKeys.showAnts, DRAW_ANTS ? "true" : "false");
+        return false;
+      }
+    );
+  return checkbox;
 }
 
 
@@ -204,23 +333,25 @@ function loop(ants: Array<Ant>, anthill: Anthill, fpsStats: Stats.Stat, antStats
     anttrap.length = 0;
   }
 
-  ants = ants.map(function (ant: Ant) {
-    const state: number = getState(ant.coords.x, ant.coords.y, anthill);
-    const direction: Direction = ant.rule[state % 255];
+  for (let i = 0, l = ants.length; i < l; i += 1) {
+    let ant = ants[i];
+    let state = getState(ant.coords.x, ant.coords.y, anthill);
+    let direction = ant.rule[state % 255];
 
-    const newOrientation: Orientation = calcNewOrientation(ant.orientation, direction);
-    const newCoords: Coords.Cartesian = calcNewCoords(ant.coords, newOrientation, anthill.width, anthill.height);
+    let newOrientation = calcNewOrientation(ant.orientation, direction);
+    let newCoords = calcNewCoords(ant.coords, newOrientation, anthill.width, anthill.width);
 
     anthill = setState(ant.coords.x, ant.coords.y, anthill, (state + 1));
 
-    // TODO: no!
     if (DRAW_ANTS) {
       Layer.draw(drawAnt(newCoords, "rgb(255,0,0)", consts.cellwidth), consts.layer);
     }
     Layer.draw(drawAnt(ant.coords, Gradient.getColor(state), consts.cellwidth), consts.layer);
 
-    return createAnt(newCoords, ant.rule, newOrientation);
-  });
+
+    ants[i].coords = newCoords;
+    ants[i].orientation = newOrientation;
+  }
 
   fpsStats =
     Util.pipe(fpsStats)
@@ -257,133 +388,22 @@ export function main(config: Config): void {
     layerAnthill
   );
 
-  const ants = createAnts(numberOfAnts, w, h);
+  const ants = initAnts(numberOfAnts, w, h);
 
-  const anthill = createAnthill(w, h);
-
-
+  const anthill = initAnthill(w, h);
 
   const layerAntdropper = Layer.create("#layer2-antdropper");
   layerAntdropper.context.strokeStyle = "#FFFFFF";
 
-  const antdropper = createAntdropper(20, 1);
-  layerAntdropper.element.addEventListener(
-    "mousedown"
-    , function (event: MouseEvent): Boolean {
-      event.preventDefault();
-      const newAnts =
-        Array(antdropper.amount)
-          .fill(antdropper.radius)
-          .map(
-            (r: number) => {
-              const randomCoords = Coords.randomCartesianInRadius(r);
-              const coordsWithOffset = Coords.createCartesian(
-                Math.floor((randomCoords.x + event.offsetX) / cellwidth)
-                , Math.floor((randomCoords.y + event.offsetY) / cellwidth)
-              );
-              return createAnt(coordsWithOffset, generateRule(), randomOrientation());
-            }
-          );
-      anttrap = newAnts;
+  const antdropper = initAntdropper(20, 1, cellwidth, layerAntdropper);
 
-      return false;
-    }
-  );
+  const radiusSlider = initRadiusSlider(antdropper);
+  const amountSlider = initAmountSlider(antdropper);
+  const drawAntsCheckbox = initDrawAntsCheckbox();
 
-  const guiRadius = <HTMLInputElement>getElementByQuery("#radius");
-  const guiRadiusShow = <HTMLElement>getElementByQuery("#show_radius");
-  const lastRadius = localStorage.getItem(StorageKeys.dropRadius);
-  if (lastRadius !== null) {
-    const r = parseInt(lastRadius, 10);
-    if (!isNaN(r)) {
-      guiRadius.value = lastRadius;
-      guiRadiusShow.innerHTML = lastRadius;
-      antdropper.radius = r;
-    }
-    else {
-      guiRadius.value = "50";
-      guiRadiusShow.innerHTML = "50";
-      antdropper.amount = 50;
-      localStorage.setItem(StorageKeys.dropRadius, "50");
-    }
-  }
-  else {
-    guiRadius.value = "50";
-    guiRadiusShow.innerHTML = "50";
-    antdropper.amount = 50;
-    localStorage.setItem(StorageKeys.dropRadius, "50");
-  }
-  guiRadius
-    .addEventListener(
-      "input"
-      , (event: Event): Boolean => {
-        event.preventDefault();
-        const x = guiRadius.valueAsNumber;
-        guiRadiusShow.innerHTML = "" + x;
-        antdropper.radius = x;
-        localStorage.setItem(StorageKeys.dropRadius, "" + x);
-        return false;
-      }
-    );
 
-  const guiAmount = <HTMLInputElement>getElementByQuery("#amount");
-  const guiAmountShow = <HTMLElement>getElementByQuery("#show_amount");
-  const lastAmount = localStorage.getItem(StorageKeys.antsPerClick);
-  if (lastAmount !== null) {
-    const n = parseInt(lastAmount, 10);
-    if (!isNaN(n)) {
-      guiAmount.value = lastAmount;
-      guiAmountShow.innerHTML = lastAmount;
-      antdropper.amount = parseInt(lastAmount, 10);
-    }
-    else {
-      guiAmount.value = "1";
-      guiAmountShow.innerHTML = "1";
-      antdropper.amount = 1;
-      localStorage.setItem(StorageKeys.antsPerClick, "1");
-    }
-  }
-  else {
-    guiAmount.value = "1";
-    guiAmountShow.innerHTML = "1";
-    antdropper.amount = 1;
-    localStorage.setItem(StorageKeys.antsPerClick, "1");
-  }
-  guiAmount
-    .addEventListener(
-      "input"
-      , function (event: Event): Boolean {
-        event.preventDefault();
-        const x = guiAmount.valueAsNumber;
-        guiAmountShow.innerHTML = "" + x;
-        antdropper.amount = x;
-        localStorage.setItem(StorageKeys.antsPerClick, "" + x);
-        return false;
-      }
-    );
 
-  const guiDrawAnts = <HTMLInputElement>getElementByQuery("#drawAnts");
-  const drawAnts = localStorage.getItem("show_ants");
-  if (drawAnts === null || drawAnts === "true") {
-    guiDrawAnts.checked = true;
-    localStorage.setItem(StorageKeys.showAnts, "true");
-    DRAW_ANTS = true;
-  }
-  else {
-    guiDrawAnts.checked = false;
-    localStorage.setItem(StorageKeys.showAnts, "false");
-    DRAW_ANTS = false;
-  }
-  guiDrawAnts
-    .addEventListener(
-      "input"
-      , function (event: Event): Boolean {
-        // uhhh... bad!!!
-        DRAW_ANTS = guiDrawAnts.checked;
-        localStorage.setItem(StorageKeys.showAnts, DRAW_ANTS ? "true" : "false");
-        return false;
-      }
-    );
+
 
   layerAntdropper.element.addEventListener(
     "mousemove"
