@@ -404,15 +404,22 @@ export function main(config: Config): void {
 
 
 
-
+  let hideDropperTimeout = 0;
   layerAntdropper.element.addEventListener(
     "mousemove"
     , function (event: MouseEvent): Boolean {
+      clearTimeout(hideDropperTimeout);
       //layerAntdropper.context.strokeStyle = "#FFFFFF";
       layerAntdropper.context.clearRect(0, 0, 9999, 9999);
       layerAntdropper.context.beginPath();
       layerAntdropper.context.arc(event.offsetX, event.offsetY, antdropper.radius, 0, Math.PI * 2);
       layerAntdropper.context.stroke();
+      hideDropperTimeout = setTimeout(() => {
+        console.log("timeout");
+        layerAntdropper.context.clearRect(0, 0, 9999, 9999)
+      },
+        2000
+      );
       return false;
     }
   );
