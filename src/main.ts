@@ -418,7 +418,7 @@ export function main(config: Config): void {
         console.log("timeout");
         layerAntdropper.context.clearRect(0, 0, 9999, 9999)
       },
-        2000
+        1000
       );
       return false;
     }
